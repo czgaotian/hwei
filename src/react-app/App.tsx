@@ -1,13 +1,13 @@
-import { App as AntdApp } from "antd";
 import { BrowserRouter } from "react-router";
 import Routes from "./routes";
+import { AuthProvider } from "./context/authContext";
 
 function App() {
   return (
     <BrowserRouter>
-      <AntdApp>
+      <AuthProvider>
         <Routes />
-      </AntdApp>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

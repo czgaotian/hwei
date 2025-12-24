@@ -1,4 +1,5 @@
 import { Outlet, Route, Routes } from "react-router";
+import ProtectedRoute from "./ProtectedRoute";
 // import {
 //   BlogPostCreate,
 //   BlogPostEdit,
@@ -12,19 +13,23 @@ import { Outlet, Route, Routes } from "react-router";
 //   CategoryShow,
 // } from "./pages/categories";
 import Layout from "../Layout";
+import Login from "../pages/Login";
 
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="login" element={<Login />} />
       <Route
+        index
         element={
-          <Layout>
-            <Outlet />
-          </Layout>
+          <ProtectedRoute>
+            <Layout>
+              <Outlet />
+            </Layout>
+          </ProtectedRoute>
         }
-      >
-        <Route path="/" element={<div>home</div>} />
-        {/* <Route path="/blog-posts">
+      />
+      {/* <Route path="/blog-posts">
               <Route index element={<BlogPostList />} />
               <Route path="create" element={<BlogPostCreate />} />
               <Route path="edit/:id" element={<BlogPostEdit />} />
@@ -37,7 +42,6 @@ const AppRoutes = () => {
               <Route path="show/:id" element={<CategoryShow />} />
             </Route>
             <Route path="*" element={<div>error</div>} /> */}
-      </Route>
     </Routes>
   );
 };
