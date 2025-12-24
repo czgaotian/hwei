@@ -12,6 +12,7 @@
     "publish": true
   },
   "dependencies": {
+    "@ant-design/icons": "6.x",
     "antd": "^6.1.2",
     "hono": "4.11.1",
     "react": "19.2.1",
