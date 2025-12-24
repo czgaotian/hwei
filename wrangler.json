@@ -15,7 +15,7 @@
   "r2_buckets": [
     {
       "binding": "BLOG_MEDIA_BLOB",
-      "bucket_name": "blog_media"
+      "bucket_name": "blog-media"
     }
   ],
   "d1_databases": [
