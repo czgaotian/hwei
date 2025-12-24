@@ -14,14 +14,14 @@
   },
   "r2_buckets": [
     {
-      "binding": "BLOG_MEDIA",
-      "bucket_name": "blog-media"
+      "binding": "BLOG_MEDIA_BLOB",
+      "bucket_name": "blog_media"
     }
   ],
   "d1_databases": [
     {
       "binding": "BLOG_DATABASE",
-      "database_name": "blog-database"
+      "database_id": "4504aee3-1e86-4f6b-af14-48aacb11abf5"
     }
   ]
 }
