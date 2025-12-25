@@ -1,6 +1,13 @@
 import { Hono } from "hono";
-const app = new Hono<{ Bindings: Env }>();
+import { prettyJSON } from "hono/pretty-json";
+import api from "./api";
 
-app.get("/api/", (c) => c.json({ name: "Cloudflare" }));
+const app = new Hono();
+
+const middleware = new Hono<{ Bindings: Env }>();
+
+middleware.use("*", prettyJSON());
+app.route("/api", middleware);
+app.route("/api", api);
 
 export default app;
