@@ -1,22 +1,17 @@
 import { Context } from "../types";
-import { z } from "zod";
 import * as userModule from "../module/user";
 import { Scrypt } from "lucia";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { json401Response, redirectResponse, requestBody } from "../lib/openapi";
 import { initializeLucia, getBlogDatabase } from "../lib";
+import { signupParamsSchema } from "../lib/validation";
 
 const app = new OpenAPIHono<Context>();
 
 const signup = createRoute({
   method: "post",
   path: "/signup",
-  ...requestBody(
-    z.object({
-      email: z.email(),
-      password: z.string().min(6),
-    })
-  ),
+  ...requestBody(signupParamsSchema),
   responses: {
     ...redirectResponse("Redirect to home page", "/"),
     ...json401Response,
@@ -50,12 +45,7 @@ app.openapi(signup, async (c) => {
 const login = createRoute({
   method: "post",
   path: "/login",
-  ...requestBody(
-    z.object({
-      email: z.email(),
-      password: z.string().min(6),
-    })
-  ),
+  ...requestBody(signupParamsSchema),
   responses: {
     ...redirectResponse("Redirect to home page", "/"),
     ...json401Response,
@@ -63,11 +53,11 @@ const login = createRoute({
 });
 
 app.openapi(login, async (c) => {
+  const db = getBlogDatabase(c);
   const { email, password } = c.req.valid("json");
-  const userModule = UserModule(getDB(c));
-  const lucia = initializeLucia(c.env.DB);
+  const lucia = initializeLucia(c.env.BLOG_DATABASE);
 
-  const user = await userModule.getUserByEmail(email);
+  const user = await userModule.getUserByEmail(db, email);
 
   if (!user) {
     return c.text(`Invalid Email or Password`, 400);
@@ -99,7 +89,7 @@ const logout = createRoute({
 });
 
 app.openapi(logout, async (c) => {
-  const lucia = initializeLucia(c.env.DB);
+  const lucia = initializeLucia(c.env.BLOG_DATABASE);
   const session = c.get("session");
 
   if (session) {

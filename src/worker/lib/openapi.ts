@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const requestBody = (schema: z.ZodType) => ({
+export const requestBody = <T extends z.ZodType>(schema: T) => ({
   request: {
     body: {
       content: {
@@ -12,7 +12,10 @@ export const requestBody = (schema: z.ZodType) => ({
   },
 });
 
-export const json200Response = (schema: z.ZodType, description: string) => ({
+export const json200Response = <T extends z.ZodType>(
+  schema: T,
+  description: string
+) => ({
   200: {
     content: {
       "application/json": {
