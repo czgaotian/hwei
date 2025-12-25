@@ -23,8 +23,7 @@
       "binding": "BLOG_DATABASE",
       "database_name": "blog-database",
       "database_id": "4504aee3-1e86-4f6b-af14-48aacb11abf5",
-      "migrations_dir": "drizzle/migrations",
-      "remote": true
+      "migrations_dir": "drizzle"
     }
   ]
 }
