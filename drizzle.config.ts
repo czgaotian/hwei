@@ -1,7 +1,9 @@
-import type { Config } from "drizzle-kit";
+import { defineConfig } from "drizzle-kit";
+import { findSqliteDatabase } from "./scripts/findDB";
 
-export default {
+export default defineConfig({
   dialect: "sqlite",
   schema: "./src/worker/db/schema.ts",
   out: "./src/worker/db/migrations",
-} satisfies Config;
+  dbCredentials: findSqliteDatabase(),
+});

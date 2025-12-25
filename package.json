@@ -49,7 +49,12 @@
     "deploy": "wrangler deploy",
     "dev": "vite",
     "lint": "eslint .",
-    "preview": "npm run build && vite preview"
+    "preview": "npm run build && vite preview",
+    "db:generate": "drizzle-kit generate",
+    "db:upgrade": "drizzle-kit up",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "npx wrangler d1 migrations apply blog-database --local",
+    "db:migrate:prod": "npx wrangler d1 migrations apply blog-database --remote"
   },
   "type": "module"
 }
