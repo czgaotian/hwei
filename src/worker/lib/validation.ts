@@ -166,3 +166,31 @@ export const TagIdParamSchema = z.object({
       example: 1,
     }),
 });
+
+// ----------------- Languages -----------------
+export const LanguageSchema = z.object({
+  id: z.number().int().openapi({ example: 1 }),
+  lang: z.string().openapi({ example: "zh-CN" }),
+  locale: z.string().openapi({ example: "简体中文" }),
+  isDefault: z.boolean().nullable().openapi({ example: false }),
+});
+
+export const CreateLanguageSchema = z.object({
+  lang: z.string().min(1).max(50).openapi({ example: "zh-CN" }),
+  locale: z.string().min(1).max(255).openapi({ example: "简体中文" }),
+  isDefault: z.boolean().optional().openapi({ example: false }),
+});
+
+export const LanguageIdParamSchema = z.object({
+  id: z.coerce
+    .number()
+    .int()
+    .positive()
+    .openapi({
+      param: {
+        name: "id",
+        in: "path",
+      },
+      example: 1,
+    }),
+});
