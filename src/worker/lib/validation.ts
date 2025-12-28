@@ -130,3 +130,39 @@ export const CategoryIdParamSchema = z.object({
       example: 1,
     }),
 });
+
+// ----------------- Tags -----------------
+export const TagSchema = z.object({
+  id: z.number().int().openapi({ example: 1 }),
+  languageId: z.number().int().openapi({ example: 1 }),
+  name: z.string().openapi({ example: "React" }),
+  color: z.string().nullable().openapi({ example: "#10B981" }),
+  createdAt: z.number().int().nullable().openapi({ example: 1735084800 }),
+  updatedAt: z.number().int().nullable().openapi({ example: 1735084800 }),
+});
+
+export const CreateTagSchema = z.object({
+  languageId: z.number().int().openapi({ example: 1 }),
+  name: z.string().min(1).max(255).openapi({ example: "React" }),
+  color: z.string().optional().openapi({ example: "#10B981" }),
+});
+
+export const UpdateTagSchema = z.object({
+  languageId: z.number().int().optional().openapi({ example: 1 }),
+  name: z.string().min(1).max(255).optional().openapi({ example: "Vue.js" }),
+  color: z.string().optional().openapi({ example: "#8B5CF6" }),
+});
+
+export const TagIdParamSchema = z.object({
+  id: z.coerce
+    .number()
+    .int()
+    .positive()
+    .openapi({
+      param: {
+        name: "id",
+        in: "path",
+      },
+      example: 1,
+    }),
+});
