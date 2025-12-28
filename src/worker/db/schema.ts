@@ -6,6 +6,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+import { PostStatus } from "../types/post";
 
 // ----------------- languages -----------------
 export const languages = sqliteTable("languages", {
@@ -78,7 +79,10 @@ export const posts = sqliteTable("posts", {
     .notNull()
     .references(() => categories.id),
   coverMediaId: integer("cover_media_id").references(() => media.id),
-  status: text("status").notNull().default("draft"),
+  status: text("status", { enum: ["draft", "published", "archived"] })
+    .$type<PostStatus>()
+    .notNull()
+    .default("draft"),
   createdAt: integer("created_at").default(sql`(strftime('%s','now'))`),
   updatedAt: integer("updated_at").default(sql`(strftime('%s','now'))`),
 });
