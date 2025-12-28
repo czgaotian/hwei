@@ -81,3 +81,52 @@ export const PostIdParamSchema = z.object({
       example: 1,
     }),
 });
+
+// ----------------- Categories -----------------
+export const CategorySchema = z.object({
+  id: z.number().int().openapi({ example: 1 }),
+  languageId: z.number().int().openapi({ example: 1 }),
+  name: z.string().openapi({ example: "Technology" }),
+  slug: z.string().openapi({ example: "technology" }),
+  color: z.string().nullable().openapi({ example: "#3B82F6" }),
+  createdAt: z.number().int().nullable().openapi({ example: 1735084800 }),
+  updatedAt: z.number().int().nullable().openapi({ example: 1735084800 }),
+});
+
+export const CreateCategorySchema = z.object({
+  languageId: z.number().int().openapi({ example: 1 }),
+  name: z.string().min(1).max(255).openapi({ example: "Technology" }),
+  slug: z.string().min(1).max(255).openapi({ example: "technology" }),
+  color: z.string().optional().openapi({ example: "#3B82F6" }),
+});
+
+export const UpdateCategorySchema = z.object({
+  languageId: z.number().int().optional().openapi({ example: 1 }),
+  name: z
+    .string()
+    .min(1)
+    .max(255)
+    .optional()
+    .openapi({ example: "Updated Technology" }),
+  slug: z
+    .string()
+    .min(1)
+    .max(255)
+    .optional()
+    .openapi({ example: "updated-technology" }),
+  color: z.string().optional().openapi({ example: "#EF4444" }),
+});
+
+export const CategoryIdParamSchema = z.object({
+  id: z.coerce
+    .number()
+    .int()
+    .positive()
+    .openapi({
+      param: {
+        name: "id",
+        in: "path",
+      },
+      example: 1,
+    }),
+});
