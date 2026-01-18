@@ -3,54 +3,35 @@ import {
   text,
   integer,
   primaryKey,
-  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { PostStatus } from "../types/post";
 
-// ----------------- languages -----------------
-export const languages = sqliteTable("languages", {
+// ----------------- categories -----------------
+export const categories = sqliteTable("categories", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  lang: text("lang").notNull().unique(), // e.g. "zh-CN", "en"
-  locale: text("locale").notNull().unique(), // e.g. human readable name
-  isDefault: integer("is_default", { mode: "boolean" }).default(false),
+  name: text("name").notNull().unique(),
+  color: text("color"),
+  createdAt: integer("created_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
+  updatedAt: integer("updated_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
 });
 
-// ----------------- categories -----------------
-export const categories = sqliteTable(
-  "categories",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    languageId: integer("language_id")
-      .notNull()
-      .references(() => languages.id),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
-    color: text("color"),
-    createdAt: integer("created_at").default(sql`(strftime('%s','now'))`),
-    updatedAt: integer("updated_at").default(sql`(strftime('%s','now'))`),
-  },
-  (t) => [
-    uniqueIndex("categories_slug_language_unique").on(t.languageId, t.slug),
-    uniqueIndex("categories_name_language_unique").on(t.languageId, t.name),
-  ]
-);
-
 // ----------------- tags -----------------
-export const tags = sqliteTable(
-  "tags",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    languageId: integer("language_id")
-      .notNull()
-      .references(() => languages.id),
-    name: text("name").notNull(),
-    color: text("color"),
-    createdAt: integer("created_at").default(sql`(strftime('%s','now'))`),
-    updatedAt: integer("updated_at").default(sql`(strftime('%s','now'))`),
-  },
-  (t) => [uniqueIndex("tags_name_language_unique").on(t.languageId, t.name)]
-);
+export const tags = sqliteTable("tags", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  color: text("color"),
+  createdAt: integer("created_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
+  updatedAt: integer("updated_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
+});
 
 // ----------------- media -----------------
 export const media = sqliteTable("media", {
@@ -58,75 +39,89 @@ export const media = sqliteTable("media", {
   type: text("type").notNull(),
   r2Key: text("r2_key").notNull().unique(),
   url: text("url").notNull(),
+  filename: text("filename").notNull(),
   mimeType: text("mime_type"),
   size: integer("size"),
   width: integer("width"),
   height: integer("height"),
   duration: integer("duration"),
-  createdAt: integer("created_at").default(sql`(strftime('%s','now'))`),
+  createdAt: integer("created_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
 });
 
-// ----------------- posts -----------------
-export const posts = sqliteTable("posts", {
+// ----------------- articles -----------------
+export const articles = sqliteTable("articles", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  languageId: integer("language_id")
-    .notNull()
-    .references(() => languages.id),
   title: text("title").notNull(),
-  description: text("description"),
+  subtitle: text("subtitle"),
+  slug: text("slug").notNull().unique(),
+  summary: text("summary"),
   content: text("content").notNull(),
-  categoryId: integer("category_id")
-    .notNull()
-    .references(() => categories.id),
-  coverMediaId: integer("cover_media_id").references(() => media.id),
-  status: text("status", { enum: ["draft", "published", "archived"] })
+  status: text("status", { enum: ["draft", "published"] })
     .$type<PostStatus>()
     .notNull()
     .default("draft"),
-  createdAt: integer("created_at").default(sql`(strftime('%s','now'))`),
-  updatedAt: integer("updated_at").default(sql`(strftime('%s','now'))`),
+  pinned: integer("pinned", { mode: "boolean" }).notNull().default(false),
+  categoryId: integer("category_id").references(() => categories.id),
+  coverMediaId: integer("cover_media_id").references(() => media.id),
+  createdAt: integer("created_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
+  updatedAt: integer("updated_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
+  deletedAt: integer("deleted_at"),
 });
 
-// ----------------- post_tags -----------------
-export const postTags = sqliteTable(
-  "post_tags",
+// ----------------- article_tags -----------------
+export const articleTags = sqliteTable(
+  "article_tags",
   {
-    postId: integer("post_id")
+    articleId: integer("article_id")
       .notNull()
-      .references(() => posts.id),
+      .references(() => articles.id),
     tagId: integer("tag_id")
       .notNull()
       .references(() => tags.id),
   },
-  (t) => [primaryKey({ columns: [t.postId, t.tagId] })]
+  (t) => [primaryKey({ columns: [t.articleId, t.tagId] })],
 );
 
-// ----------------- post_media -----------------
-export const postMedia = sqliteTable(
-  "post_media",
+// ----------------- article_media -----------------
+export const articleMedia = sqliteTable(
+  "article_media",
   {
-    postId: integer("post_id")
+    articleId: integer("article_id")
       .notNull()
-      .references(() => posts.id),
+      .references(() => articles.id),
     mediaId: integer("media_id")
       .notNull()
       .references(() => media.id),
     purpose: text("purpose"),
   },
-  (t) => [primaryKey({ columns: [t.postId, t.mediaId] })]
+  (t) => [primaryKey({ columns: [t.articleId, t.mediaId] })],
 );
 
+// ----------------- user -----------------
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
-  email: text("email").notNull(),
+  email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  createdAt: integer("created_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
+  updatedAt: integer("updated_at")
+    .notNull()
+    .default(sql`(strftime('%s','now'))`),
 });
 
+// ----------------- session -----------------
 export const session = sqliteTable("session", {
   id: text("id").primaryKey(),
-  expires_at: integer("expires_at").notNull(),
-  user_id: integer("user_id")
+  expiresAt: integer("expires_at").notNull(),
+  userId: text("user_id")
     .notNull()
     .references(() => user.id),
-  fresh: integer("fresh", { mode: "boolean" }),
+  fresh: integer("fresh", { mode: "boolean" }).notNull().default(true),
 });

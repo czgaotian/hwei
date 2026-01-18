@@ -21,6 +21,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
+    "better-sqlite3": "^12.6.2",
     "drizzle-kit": "^0.31.8",
     "eslint": "9.39.2",
     "eslint-plugin-react-hooks": "7.0.1",
@@ -43,8 +44,8 @@
     "db:generate": "drizzle-kit generate",
     "db:upgrade": "drizzle-kit up",
     "db:studio": "drizzle-kit studio",
-    "db:migrate": "npx wrangler d1 migrations apply blog-database --local",
-    "db:migrate:prod": "npx wrangler d1 migrations apply blog-database --remote"
+    "db:migrate": "wrangler d1 migrations apply blog-database --local",
+    "db:migrate:prod": "wrangler d1 migrations apply blog-database --remote"
   },
   "type": "module"
 }

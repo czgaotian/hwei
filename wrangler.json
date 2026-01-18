@@ -12,37 +12,19 @@
     "directory": "./dist/client",
     "not_found_handling": "single-page-application"
   },
-  "env": {
-    "dev": {
-      "d1_databases": [
-        {
-          "binding": "BLOG_DATABASE",
-          "database_name": "blog-database-dev",
-          "database_id": "9c5329b3-762f-44aa-a3c6-959d836b217d"
-        }
-      ],
-      "r2_buckets": [
-        {
-          "bucket_name": "blog-media-dev",
-          "binding": "BLOG_MEDIA_BLOB"
-        }
-      ]
-    },
-    "prod": {
-      "r2_buckets": [
-        {
-          "binding": "BLOG_MEDIA_BLOB",
-          "bucket_name": "blog-media"
-        }
-      ],
-      "d1_databases": [
-        {
-          "binding": "BLOG_DATABASE",
-          "database_name": "blog-database",
-          "database_id": "4504aee3-1e86-4f6b-af14-48aacb11abf5",
-          "migrations_dir": "./src/worker/db/migrations"
-        }
-      ]
+
+  "r2_buckets": [
+    {
+      "binding": "BLOG_MEDIA_BLOB",
+      "bucket_name": "blog-media"
     }
-  }
+  ],
+  "d1_databases": [
+    {
+      "binding": "BLOG_DATABASE",
+      "database_name": "blog-database",
+      "database_id": "4504aee3-1e86-4f6b-af14-48aacb11abf5",
+      "migrations_dir": "./src/worker/db/migrations"
+    }
+  ]
 }
