@@ -103,10 +103,10 @@ export const articleMedia = sqliteTable(
   (t) => [primaryKey({ columns: [t.articleId, t.mediaId] })],
 );
 
-// ----------------- user -----------------
-export const user = sqliteTable("user", {
+// ----------------- users -----------------
+export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
-  email: text("email").notNull().unique(),
+  username: text("username").notNull().unique(),
   password: text("password").notNull(),
   createdAt: integer("created_at")
     .notNull()
@@ -114,14 +114,4 @@ export const user = sqliteTable("user", {
   updatedAt: integer("updated_at")
     .notNull()
     .default(sql`(strftime('%s','now'))`),
-});
-
-// ----------------- session -----------------
-export const session = sqliteTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: integer("expires_at").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id),
-  fresh: integer("fresh", { mode: "boolean" }).notNull().default(true),
 });
