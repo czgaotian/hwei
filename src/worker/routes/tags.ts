@@ -2,7 +2,7 @@ import * as tagModule from "../module/tags";
 import { getBlogDatabase } from "../lib/db";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { Context } from "../types";
-import { json200Response, json401Response, requestBody } from "../lib/openapi";
+import { json200Response, requestBody } from "../lib/openapi";
 import {
   TagSchema,
   CreateTagSchema,
@@ -18,15 +18,10 @@ const getTags = createRoute({
   path: "/",
   responses: {
     ...json200Response(z.array(TagSchema), "List of tags"),
-    ...json401Response,
   },
 });
 
 app.openapi(getTags, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const tags = await tagModule.getTags(db);
   return c.json(tags, 200);
@@ -56,15 +51,10 @@ const getTag = createRoute({
       },
       description: "Tag not found",
     },
-    ...json401Response,
   },
 });
 
 app.openapi(getTag, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const { id } = c.req.valid("param");
 
@@ -99,15 +89,10 @@ const createTag = createRoute({
       },
       description: "Invalid request data",
     },
-    ...json401Response,
   },
 });
 
 app.openapi(createTag, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const data = c.req.valid("json");
 
@@ -158,15 +143,10 @@ const updateTag = createRoute({
       },
       description: "Invalid request data",
     },
-    ...json401Response,
   },
 });
 
 app.openapi(updateTag, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const { id } = c.req.valid("param");
   const data = c.req.valid("json");
@@ -208,15 +188,10 @@ const deleteTag = createRoute({
       },
       description: "Tag not found",
     },
-    ...json401Response,
   },
 });
 
 app.openapi(deleteTag, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const { id } = c.req.valid("param");
 

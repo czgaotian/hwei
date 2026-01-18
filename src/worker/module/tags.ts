@@ -1,5 +1,5 @@
 import { DrizzleDB } from "../types";
-import { tags } from "../db/schema";
+import { tags, articleTags } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export const getTags = async (db: DrizzleDB) => {
@@ -14,12 +14,17 @@ export const getTagById = async (db: DrizzleDB, id: number) => {
 export const createTag = async (
   db: DrizzleDB,
   data: {
-    languageId: number;
     name: string;
     color?: string;
-  }
+  },
 ) => {
-  const result = await db.insert(tags).values(data).returning();
+  const result = await db
+    .insert(tags)
+    .values({
+      ...data,
+      updatedAt: Math.floor(Date.now() / 1000),
+    })
+    .returning();
   return result[0];
 };
 
@@ -27,20 +32,26 @@ export const updateTag = async (
   db: DrizzleDB,
   id: number,
   data: {
-    languageId?: number;
     name?: string;
     color?: string;
-  }
+  },
 ) => {
   const result = await db
     .update(tags)
-    .set(data)
+    .set({
+      ...data,
+      updatedAt: Math.floor(Date.now() / 1000),
+    })
     .where(eq(tags.id, id))
     .returning();
   return result[0] || null;
 };
 
 export const deleteTag = async (db: DrizzleDB, id: number) => {
+  // 先删除关联的文章标签
+  await db.delete(articleTags).where(eq(articleTags.tagId, id));
+
+  // 删除标签
   const result = await db.delete(tags).where(eq(tags.id, id)).returning();
   return result[0] || null;
 };

@@ -2,7 +2,7 @@ import * as categoryModule from "../module/categories";
 import { getBlogDatabase } from "../lib/db";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { Context } from "../types";
-import { json200Response, json401Response, requestBody } from "../lib/openapi";
+import { json200Response, requestBody } from "../lib/openapi";
 import {
   CategorySchema,
   CreateCategorySchema,
@@ -18,15 +18,10 @@ const getCategories = createRoute({
   path: "/",
   responses: {
     ...json200Response(z.array(CategorySchema), "List of categories"),
-    ...json401Response,
   },
 });
 
 app.openapi(getCategories, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const categories = await categoryModule.getCategories(db);
   return c.json(categories, 200);
@@ -56,15 +51,10 @@ const getCategory = createRoute({
       },
       description: "Category not found",
     },
-    ...json401Response,
   },
 });
 
 app.openapi(getCategory, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const { id } = c.req.valid("param");
 
@@ -99,15 +89,10 @@ const createCategory = createRoute({
       },
       description: "Invalid request data",
     },
-    ...json401Response,
   },
 });
 
 app.openapi(createCategory, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const data = c.req.valid("json");
 
@@ -158,15 +143,10 @@ const updateCategory = createRoute({
       },
       description: "Invalid request data",
     },
-    ...json401Response,
   },
 });
 
 app.openapi(updateCategory, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const { id } = c.req.valid("param");
   const data = c.req.valid("json");
@@ -208,25 +188,32 @@ const deleteCategory = createRoute({
       },
       description: "Category not found",
     },
-    ...json401Response,
+    400: {
+      content: {
+        "text/plain": {
+          schema: z.string(),
+        },
+      },
+      description: "Category is in use",
+    },
   },
 });
 
 app.openapi(deleteCategory, async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
   const db = getBlogDatabase(c);
   const { id } = c.req.valid("param");
 
-  const deletedCategory = await categoryModule.deleteCategory(db, id);
+  try {
+    const deletedCategory = await categoryModule.deleteCategory(db, id);
 
-  if (!deletedCategory) {
-    return c.text("Category not found", 404);
+    if (!deletedCategory) {
+      return c.text("Category not found", 404);
+    }
+
+    return c.json(deletedCategory, 200);
+  } catch (error) {
+    return c.text(`Failed to delete category: ${error}`, 400);
   }
-
-  return c.json(deletedCategory, 200);
 });
 
 export default app;

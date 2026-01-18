@@ -6,69 +6,81 @@ export const signupParamsSchema = z.object({
   password: z.string().min(6),
 });
 
-// ----------------- Posts -----------------
-export const PostSchema = z.object({
+// ----------------- Articles -----------------
+export const ArticleSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  languageId: z.number().int().openapi({ example: 1 }),
-  title: z.string().openapi({ example: "My Blog Post" }),
-  description: z
+  title: z.string().openapi({ example: "My Blog Article" }),
+  subtitle: z
     .string()
     .nullable()
-    .openapi({ example: "A brief description" }),
-  content: z.string().openapi({ example: "Full content here..." }),
-  categoryId: z.number().int().openapi({ example: 1 }),
-  coverMediaId: z.number().int().nullable().openapi({ example: 1 }),
+    .openapi({ example: "An interesting subtitle" }),
+  slug: z.string().openapi({ example: "my-blog-article" }),
+  summary: z.string().nullable().openapi({ example: "A brief summary" }),
+  content: z.string().openapi({ example: "Full article content here..." }),
   status: z
-    .enum(["draft", "published", "archived"])
+    .enum(["draft", "published"])
     .default("draft")
     .openapi({ example: "draft" }),
-  createdAt: z.number().int().nullable().openapi({ example: 1735084800 }),
-  updatedAt: z.number().int().nullable().openapi({ example: 1735084800 }),
+  pinned: z.boolean().default(false).openapi({ example: false }),
+  categoryId: z.number().int().nullable().openapi({ example: 1 }),
+  coverMediaId: z.number().int().nullable().openapi({ example: 1 }),
+  createdAt: z.number().int().openapi({ example: 1735084800 }),
+  updatedAt: z.number().int().openapi({ example: 1735084800 }),
+  deletedAt: z.number().int().nullable().openapi({ example: null }),
 });
 
-export const CreatePostSchema = z.object({
-  languageId: z.number().int().openapi({ example: 1 }),
-  title: z.string().min(1).max(255).openapi({ example: "My Blog Post" }),
-  description: z
+export const CreateArticleSchema = z.object({
+  title: z.string().min(1).max(255).openapi({ example: "My Blog Article" }),
+  subtitle: z
     .string()
     .optional()
-    .openapi({ example: "A brief description" }),
-  content: z.string().min(1).openapi({ example: "Full content here..." }),
-  categoryId: z.number().int().openapi({ example: 1 }),
-  coverMediaId: z.number().int().optional().openapi({ example: 1 }),
+    .openapi({ example: "An interesting subtitle" }),
+  slug: z.string().min(1).max(255).openapi({ example: "my-blog-article" }),
+  summary: z.string().optional().openapi({ example: "A brief summary" }),
+  content: z
+    .string()
+    .min(1)
+    .openapi({ example: "Full article content here..." }),
   status: z
-    .enum(["draft", "published", "archived"])
+    .enum(["draft", "published"])
     .optional()
     .default("draft")
     .openapi({ example: "draft" }),
+  pinned: z.boolean().optional().default(false).openapi({ example: false }),
+  categoryId: z.number().int().optional().openapi({ example: 1 }),
+  coverMediaId: z.number().int().optional().openapi({ example: 1 }),
 });
 
-export const UpdatePostSchema = z.object({
-  languageId: z.number().int().optional().openapi({ example: 1 }),
+export const UpdateArticleSchema = z.object({
   title: z
     .string()
     .min(1)
     .max(255)
     .optional()
-    .openapi({ example: "Updated Blog Post" }),
-  description: z
+    .openapi({ example: "Updated Article" }),
+  subtitle: z.string().optional().openapi({ example: "Updated subtitle" }),
+  slug: z
     .string()
+    .min(1)
+    .max(255)
     .optional()
-    .openapi({ example: "Updated description" }),
+    .openapi({ example: "updated-article" }),
+  summary: z.string().optional().openapi({ example: "Updated summary" }),
   content: z
     .string()
     .min(1)
     .optional()
     .openapi({ example: "Updated content..." }),
-  categoryId: z.number().int().optional().openapi({ example: 1 }),
-  coverMediaId: z.number().int().optional().openapi({ example: 1 }),
   status: z
-    .enum(["draft", "published", "archived"])
+    .enum(["draft", "published"])
     .optional()
     .openapi({ example: "published" }),
+  pinned: z.boolean().optional().openapi({ example: true }),
+  categoryId: z.number().int().optional().openapi({ example: 2 }),
+  coverMediaId: z.number().int().optional().openapi({ example: 2 }),
 });
 
-export const PostIdParamSchema = z.object({
+export const ArticleIdParamSchema = z.object({
   id: z.coerce
     .number()
     .int()
@@ -85,35 +97,24 @@ export const PostIdParamSchema = z.object({
 // ----------------- Categories -----------------
 export const CategorySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  languageId: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Technology" }),
-  slug: z.string().openapi({ example: "technology" }),
   color: z.string().nullable().openapi({ example: "#3B82F6" }),
-  createdAt: z.number().int().nullable().openapi({ example: 1735084800 }),
-  updatedAt: z.number().int().nullable().openapi({ example: 1735084800 }),
+  createdAt: z.number().int().openapi({ example: 1735084800 }),
+  updatedAt: z.number().int().openapi({ example: 1735084800 }),
 });
 
 export const CreateCategorySchema = z.object({
-  languageId: z.number().int().openapi({ example: 1 }),
   name: z.string().min(1).max(255).openapi({ example: "Technology" }),
-  slug: z.string().min(1).max(255).openapi({ example: "technology" }),
   color: z.string().optional().openapi({ example: "#3B82F6" }),
 });
 
 export const UpdateCategorySchema = z.object({
-  languageId: z.number().int().optional().openapi({ example: 1 }),
   name: z
     .string()
     .min(1)
     .max(255)
     .optional()
     .openapi({ example: "Updated Technology" }),
-  slug: z
-    .string()
-    .min(1)
-    .max(255)
-    .optional()
-    .openapi({ example: "updated-technology" }),
   color: z.string().optional().openapi({ example: "#EF4444" }),
 });
 
@@ -134,21 +135,18 @@ export const CategoryIdParamSchema = z.object({
 // ----------------- Tags -----------------
 export const TagSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  languageId: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "React" }),
   color: z.string().nullable().openapi({ example: "#10B981" }),
-  createdAt: z.number().int().nullable().openapi({ example: 1735084800 }),
-  updatedAt: z.number().int().nullable().openapi({ example: 1735084800 }),
+  createdAt: z.number().int().openapi({ example: 1735084800 }),
+  updatedAt: z.number().int().openapi({ example: 1735084800 }),
 });
 
 export const CreateTagSchema = z.object({
-  languageId: z.number().int().openapi({ example: 1 }),
   name: z.string().min(1).max(255).openapi({ example: "React" }),
   color: z.string().optional().openapi({ example: "#10B981" }),
 });
 
 export const UpdateTagSchema = z.object({
-  languageId: z.number().int().optional().openapi({ example: 1 }),
   name: z.string().min(1).max(255).optional().openapi({ example: "Vue.js" }),
   color: z.string().optional().openapi({ example: "#8B5CF6" }),
 });
@@ -167,21 +165,37 @@ export const TagIdParamSchema = z.object({
     }),
 });
 
-// ----------------- Languages -----------------
-export const LanguageSchema = z.object({
+// ----------------- Media -----------------
+export const MediaSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  lang: z.string().openapi({ example: "zh-CN" }),
-  locale: z.string().openapi({ example: "简体中文" }),
-  isDefault: z.boolean().nullable().openapi({ example: false }),
+  type: z.string().openapi({ example: "image" }),
+  r2Key: z.string().openapi({ example: "uploads/image_123.jpg" }),
+  url: z.string().openapi({ example: "https://cdn.example.com/image_123.jpg" }),
+  filename: z.string().openapi({ example: "my-image.jpg" }),
+  mimeType: z.string().nullable().openapi({ example: "image/jpeg" }),
+  size: z.number().int().nullable().openapi({ example: 1024000 }),
+  width: z.number().int().nullable().openapi({ example: 1920 }),
+  height: z.number().int().nullable().openapi({ example: 1080 }),
+  duration: z.number().int().nullable().openapi({ example: 120 }),
+  createdAt: z.number().int().openapi({ example: 1735084800 }),
 });
 
-export const CreateLanguageSchema = z.object({
-  lang: z.string().min(1).max(50).openapi({ example: "zh-CN" }),
-  locale: z.string().min(1).max(255).openapi({ example: "简体中文" }),
-  isDefault: z.boolean().optional().openapi({ example: false }),
+export const CreateMediaSchema = z.object({
+  type: z.string().min(1).openapi({ example: "image" }),
+  r2Key: z.string().min(1).openapi({ example: "uploads/image_123.jpg" }),
+  url: z
+    .string()
+    .min(1)
+    .openapi({ example: "https://cdn.example.com/image_123.jpg" }),
+  filename: z.string().min(1).openapi({ example: "my-image.jpg" }),
+  mimeType: z.string().optional().openapi({ example: "image/jpeg" }),
+  size: z.number().int().optional().openapi({ example: 1024000 }),
+  width: z.number().int().optional().openapi({ example: 1920 }),
+  height: z.number().int().optional().openapi({ example: 1080 }),
+  duration: z.number().int().optional().openapi({ example: 120 }),
 });
 
-export const LanguageIdParamSchema = z.object({
+export const MediaIdParamSchema = z.object({
   id: z.coerce
     .number()
     .int()
