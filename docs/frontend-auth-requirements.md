@@ -60,14 +60,14 @@
 
 1. 用户填写表单
 2. 前端验证表单规则
-3. 调用 `POST /api/auth/setup` 接口
+3. 调用 `POST /api/auth/register` 接口
 4. 成功后自动跳转到登录页面，显示成功提示
 5. 失败则显示错误信息（如用户名已存在）
 
 #### 2.1.4 API 对接
 
 ```typescript
-POST /api/auth/setup
+POST /api/auth/register
 
 // 请求
 {
@@ -194,7 +194,7 @@ POST /api/auth/logout
 
 | 路由类型   | 说明                 | 示例路由                  |
 | ---------- | -------------------- | ------------------------- |
-| 公开路由   | 无需登录即可访问     | `/login`, `/setup`        |
+| 公开路由   | 无需登录即可访问     | `/login`, `/register`     |
 | 受保护路由 | 需要登录才能访问     | `/`, `/articles`, `/tags` |
 | 重定向     | 根据认证状态自动跳转 | `/` → `/login`            |
 
@@ -463,8 +463,8 @@ export const authApi = {
   me: () => api.get("/auth/me"),
 
   // 初始化管理员
-  setup: (username: string, password: string) =>
-    api.post("/auth/setup", { username, password }),
+  register: (username: string, password: string) =>
+    api.post("/auth/register", { username, password }),
 };
 ```
 
