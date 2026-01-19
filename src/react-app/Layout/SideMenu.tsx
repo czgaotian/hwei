@@ -1,11 +1,11 @@
 import {
-  DesktopOutlined,
-  FileOutlined,
-  PieChartOutlined,
-  TeamOutlined,
-  UserOutlined,
+  FileTextOutlined,
+  FolderOutlined,
+  TagsOutlined,
+  FileImageOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, MenuProps } from "antd";
+import { useNavigate, useLocation } from "react-router";
 
 const { Sider } = Layout;
 
@@ -25,7 +25,7 @@ function getItem(
   label: React.ReactNode,
   key: React.Key,
   icon?: React.ReactNode,
-  children?: MenuItem[]
+  children?: MenuItem[],
 ): MenuItem {
   return {
     key,
@@ -36,18 +36,10 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("Option 1", "1", <PieChartOutlined />),
-  getItem("Option 2", "2", <DesktopOutlined />),
-  getItem("User", "sub1", <UserOutlined />, [
-    getItem("Tom", "3"),
-    getItem("Bill", "4"),
-    getItem("Alex", "5"),
-  ]),
-  getItem("Team", "sub2", <TeamOutlined />, [
-    getItem("Team 1", "6"),
-    getItem("Team 2", "8"),
-  ]),
-  getItem("Files", "9", <FileOutlined />),
+  getItem("文章管理", "/articles", <FileTextOutlined />),
+  getItem("分类管理", "/categories", <FolderOutlined />),
+  getItem("标签管理", "/tags", <TagsOutlined />),
+  getItem("静态资源", "/media", <FileImageOutlined />),
 ];
 
 export interface SideMenuProps {
@@ -56,6 +48,12 @@ export interface SideMenuProps {
 
 const SideMenu: React.FC<SideMenuProps> = (props) => {
   const { collapsed } = props;
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleMenuClick: MenuProps["onClick"] = (e) => {
+    navigate(e.key);
+  };
 
   return (
     <Sider
@@ -65,12 +63,12 @@ const SideMenu: React.FC<SideMenuProps> = (props) => {
       style={siderStyle}
       collapsedWidth={0}
     >
-      <div className="demo-logo-vertical" />
       <Menu
         theme="dark"
         mode="inline"
-        defaultSelectedKeys={["1"]}
+        selectedKeys={[location.pathname]}
         items={items}
+        onClick={handleMenuClick}
       />
     </Sider>
   );
