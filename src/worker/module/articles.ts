@@ -1,28 +1,48 @@
 import { DrizzleDB } from "../types";
 import { articles, articleTags, articleMedia, tags, media } from "../db/schema";
-import { eq, isNull, and, desc } from "drizzle-orm";
+import { eq, isNull, and, desc, count } from "drizzle-orm";
 import { PostStatus } from "../types/post";
 
-export const getArticles = async (db: DrizzleDB) => {
-  return await db
-    .select({
-      id: articles.id,
-      title: articles.title,
-      subtitle: articles.subtitle,
-      slug: articles.slug,
-      summary: articles.summary,
-      content: articles.content,
-      status: articles.status,
-      pinned: articles.pinned,
-      categoryId: articles.categoryId,
-      coverMediaId: articles.coverMediaId,
-      createdAt: articles.createdAt,
-      updatedAt: articles.updatedAt,
-      deletedAt: articles.deletedAt,
-    })
-    .from(articles)
-    .where(isNull(articles.deletedAt))
-    .orderBy(desc(articles.pinned), desc(articles.createdAt));
+export const getArticles = async (
+  db: DrizzleDB,
+  options?: { page?: number; pageSize?: number },
+) => {
+  const page = options?.page ?? 1;
+  const pageSize = options?.pageSize ?? 10;
+  const offset = (page - 1) * pageSize;
+
+  const [data, totalResult] = await Promise.all([
+    db
+      .select({
+        id: articles.id,
+        title: articles.title,
+        subtitle: articles.subtitle,
+        slug: articles.slug,
+        summary: articles.summary,
+        content: articles.content,
+        status: articles.status,
+        pinned: articles.pinned,
+        categoryId: articles.categoryId,
+        coverMediaId: articles.coverMediaId,
+        createdAt: articles.createdAt,
+        updatedAt: articles.updatedAt,
+        deletedAt: articles.deletedAt,
+      })
+      .from(articles)
+      .where(isNull(articles.deletedAt))
+      .orderBy(desc(articles.pinned), desc(articles.createdAt))
+      .limit(pageSize)
+      .offset(offset),
+    db
+      .select({ count: count() })
+      .from(articles)
+      .where(isNull(articles.deletedAt)),
+  ]);
+
+  return {
+    data,
+    total: totalResult[0].count,
+  };
 };
 
 export const getArticleById = async (db: DrizzleDB, id: number) => {

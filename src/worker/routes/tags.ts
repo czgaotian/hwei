@@ -2,12 +2,14 @@ import * as tagModule from "../module/tags";
 import { getBlogDatabase } from "../lib/db";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { Context } from "../types";
-import { json200Response, requestBody } from "../lib/openapi";
+import { requestBody } from "../lib/openapi";
 import {
   TagSchema,
   CreateTagSchema,
   UpdateTagSchema,
   TagIdParamSchema,
+  PaginationQuerySchema,
+  PaginatedResponseSchema,
 } from "../lib/validation";
 
 const app = new OpenAPIHono<Context>();
@@ -16,15 +18,39 @@ const app = new OpenAPIHono<Context>();
 const getTags = createRoute({
   method: "get",
   path: "/",
+  request: {
+    query: PaginationQuerySchema,
+  },
   responses: {
-    ...json200Response(z.array(TagSchema), "List of tags"),
+    200: {
+      content: {
+        "application/json": {
+          schema: PaginatedResponseSchema(TagSchema),
+        },
+      },
+      description: "Paginated list of tags",
+    },
   },
 });
 
 app.openapi(getTags, async (c) => {
   const db = getBlogDatabase(c);
-  const tags = await tagModule.getTags(db);
-  return c.json(tags, 200);
+  const { page, pageSize } = c.req.valid("query");
+
+  const { data, total } = await tagModule.getTags(db, { page, pageSize });
+
+  return c.json(
+    {
+      data,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    },
+    200,
+  );
 });
 
 // GET /tags/:id - 获取单个标签

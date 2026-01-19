@@ -1,5 +1,49 @@
 import { z } from "@hono/zod-openapi";
 
+// ----------------- Pagination -----------------
+export const PaginationQuerySchema = z.object({
+  page: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(1)
+    .openapi({
+      param: {
+        name: "page",
+        in: "query",
+      },
+      example: 1,
+    }),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(100)
+    .optional()
+    .default(10)
+    .openapi({
+      param: {
+        name: "pageSize",
+        in: "query",
+      },
+      example: 10,
+    }),
+});
+
+export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
+  itemSchema: T,
+) =>
+  z.object({
+    data: z.array(itemSchema),
+    pagination: z.object({
+      page: z.number().int().positive(),
+      pageSize: z.number().int().positive(),
+      total: z.number().int().nonnegative(),
+      totalPages: z.number().int().nonnegative(),
+    }),
+  });
+
 // ----------------- User & Auth -----------------
 export const signupParamsSchema = z.object({
   email: z.email(),

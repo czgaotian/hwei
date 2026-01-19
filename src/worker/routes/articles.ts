@@ -2,12 +2,14 @@ import * as articleModule from "../module/articles";
 import { getBlogDatabase } from "../lib/db";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { Context } from "../types";
-import { json200Response, requestBody } from "../lib/openapi";
+import { requestBody } from "../lib/openapi";
 import {
   ArticleSchema,
   CreateArticleSchema,
   UpdateArticleSchema,
   ArticleIdParamSchema,
+  PaginationQuerySchema,
+  PaginatedResponseSchema,
 } from "../lib/validation";
 
 const app = new OpenAPIHono<Context>();
@@ -16,15 +18,42 @@ const app = new OpenAPIHono<Context>();
 const getArticles = createRoute({
   method: "get",
   path: "/",
+  request: {
+    query: PaginationQuerySchema,
+  },
   responses: {
-    ...json200Response(z.array(ArticleSchema), "List of blog articles"),
+    200: {
+      content: {
+        "application/json": {
+          schema: PaginatedResponseSchema(ArticleSchema),
+        },
+      },
+      description: "Paginated list of blog articles",
+    },
   },
 });
 
 app.openapi(getArticles, async (c) => {
   const db = getBlogDatabase(c);
-  const articles = await articleModule.getArticles(db);
-  return c.json(articles, 200);
+  const { page, pageSize } = c.req.valid("query");
+
+  const { data, total } = await articleModule.getArticles(db, {
+    page,
+    pageSize,
+  });
+
+  return c.json(
+    {
+      data,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    },
+    200,
+  );
 });
 
 // GET /articles/:id - 获取单个文章

@@ -2,11 +2,13 @@ import * as mediaModule from "../module/media";
 import { getBlogDatabase } from "../lib/db";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { Context } from "../types";
-import { json200Response, requestBody } from "../lib/openapi";
+import { requestBody } from "../lib/openapi";
 import {
   MediaSchema,
   CreateMediaSchema,
   MediaIdParamSchema,
+  PaginationQuerySchema,
+  PaginatedResponseSchema,
 } from "../lib/validation";
 
 const app = new OpenAPIHono<Context>();
@@ -15,15 +17,42 @@ const app = new OpenAPIHono<Context>();
 const getMediaList = createRoute({
   method: "get",
   path: "/",
+  request: {
+    query: PaginationQuerySchema,
+  },
   responses: {
-    ...json200Response(z.array(MediaSchema), "List of media files"),
+    200: {
+      content: {
+        "application/json": {
+          schema: PaginatedResponseSchema(MediaSchema),
+        },
+      },
+      description: "Paginated list of media files",
+    },
   },
 });
 
 app.openapi(getMediaList, async (c) => {
   const db = getBlogDatabase(c);
-  const mediaList = await mediaModule.getMediaList(db);
-  return c.json(mediaList, 200);
+  const { page, pageSize } = c.req.valid("query");
+
+  const { data, total } = await mediaModule.getMediaList(db, {
+    page,
+    pageSize,
+  });
+
+  return c.json(
+    {
+      data,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    },
+    200,
+  );
 });
 
 // GET /media/:id - 获取单个媒体文件

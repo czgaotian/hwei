@@ -1,9 +1,24 @@
 import { DrizzleDB } from "../types";
 import { tags, articleTags } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 
-export const getTags = async (db: DrizzleDB) => {
-  return await db.select().from(tags);
+export const getTags = async (
+  db: DrizzleDB,
+  options?: { page?: number; pageSize?: number },
+) => {
+  const page = options?.page ?? 1;
+  const pageSize = options?.pageSize ?? 10;
+  const offset = (page - 1) * pageSize;
+
+  const [data, totalResult] = await Promise.all([
+    db.select().from(tags).limit(pageSize).offset(offset),
+    db.select({ count: count() }).from(tags),
+  ]);
+
+  return {
+    data,
+    total: totalResult[0].count,
+  };
 };
 
 export const getTagById = async (db: DrizzleDB, id: number) => {

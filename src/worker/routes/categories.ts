@@ -2,12 +2,14 @@ import * as categoryModule from "../module/categories";
 import { getBlogDatabase } from "../lib/db";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { Context } from "../types";
-import { json200Response, requestBody } from "../lib/openapi";
+import { requestBody } from "../lib/openapi";
 import {
   CategorySchema,
   CreateCategorySchema,
   UpdateCategorySchema,
   CategoryIdParamSchema,
+  PaginationQuerySchema,
+  PaginatedResponseSchema,
 } from "../lib/validation";
 
 const app = new OpenAPIHono<Context>();
@@ -16,15 +18,42 @@ const app = new OpenAPIHono<Context>();
 const getCategories = createRoute({
   method: "get",
   path: "/",
+  request: {
+    query: PaginationQuerySchema,
+  },
   responses: {
-    ...json200Response(z.array(CategorySchema), "List of categories"),
+    200: {
+      content: {
+        "application/json": {
+          schema: PaginatedResponseSchema(CategorySchema),
+        },
+      },
+      description: "Paginated list of categories",
+    },
   },
 });
 
 app.openapi(getCategories, async (c) => {
   const db = getBlogDatabase(c);
-  const categories = await categoryModule.getCategories(db);
-  return c.json(categories, 200);
+  const { page, pageSize } = c.req.valid("query");
+
+  const { data, total } = await categoryModule.getCategories(db, {
+    page,
+    pageSize,
+  });
+
+  return c.json(
+    {
+      data,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    },
+    200,
+  );
 });
 
 // GET /categories/:id - 获取单个分类
