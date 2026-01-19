@@ -1,0 +1,8 @@
+# Development environment variables example
+# Copy this file to .dev.vars and fill in the values
+
+# JWT Secret for signing tokens (minimum 32 characters recommended)
+JWT_SECRET=your-secret-key-change-this-in-production-at-least-32-chars
+
+# Note: For production, set this as a secret using:
+# wrangler secret put JWT_SECRET
