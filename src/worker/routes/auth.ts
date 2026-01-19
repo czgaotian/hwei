@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { Context } from "../types";
 import { z } from "zod";
 import { generateJWT, verifyJWT } from "../lib";
+import { getBlogDatabase } from "../lib/db";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -35,7 +36,7 @@ authRouter.post("/register", async (c) => {
   try {
     const body = await c.req.json();
     const validated = registerSchema.parse(body);
-    const db = c.get("db");
+    const db = getBlogDatabase(c);
 
     // Check if any users exist
     const existingUsers = await db.select().from(users).limit(1);
@@ -97,7 +98,7 @@ authRouter.post("/login", async (c) => {
   try {
     const body = await c.req.json();
     const validated = loginSchema.parse(body);
-    const db = c.get("db");
+    const db = getBlogDatabase(c);
     const env = c.env;
 
     // Find user by username
@@ -197,33 +198,60 @@ authRouter.post("/logout", async (c) => {
 
 /**
  * GET /api/auth/verify
- * Verify if current token is valid
+ * Verify if current token is valid and return user info
  */
 authRouter.get("/verify", authMiddleware(), async (c) => {
-  const cookies = c.req.header("Cookie");
-  const token = cookies?.match(/auth_token=([^;]+)/)?.[1];
+  const user = c.get("user");
+  const db = getBlogDatabase(c);
 
-  if (!token) {
+  if (!user) {
     return c.json(
       {
         valid: false,
-        error: "MISSING_TOKEN",
+        error: "MISSING_USER",
       },
       401,
     );
   }
 
   try {
-    const payload = await verifyJWT(token, c.env.JWT_SECRET);
-    const expiresIn = payload.exp
+    // Get user info from database
+    const [dbUser] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+      })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1);
+
+    if (!dbUser) {
+      return c.json(
+        {
+          valid: false,
+          error: "USER_NOT_FOUND",
+        },
+        404,
+      );
+    }
+
+    const cookies = c.req.header("Cookie");
+    const token = cookies?.match(/auth_token=([^;]+)/)?.[1];
+    const payload = token ? await verifyJWT(token, c.env.JWT_SECRET) : null;
+    const expiresIn = payload?.exp
       ? payload.exp - Math.floor(Date.now() / 1000)
       : 0;
 
     return c.json({
       valid: true,
+      user: {
+        username: dbUser.username,
+        role: "admin" as const,
+      },
       expiresIn: expiresIn > 0 ? expiresIn : 0,
     });
   } catch (error) {
+    console.error("Verify error:", error);
     return c.json(
       {
         valid: false,
@@ -242,7 +270,7 @@ authRouter.post("/change-password", authMiddleware(), async (c) => {
   try {
     const body = await c.req.json();
     const validated = changePasswordSchema.parse(body);
-    const db = c.get("db");
+    const db = getBlogDatabase(c);
     const user = c.get("user");
 
     if (!user) {

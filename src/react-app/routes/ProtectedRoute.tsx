@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router";
+import { Spin } from "antd";
 import { useAuth } from "../context/authContext";
 
 type ProtectedRouteProps = {
@@ -6,14 +7,29 @@ type ProtectedRouteProps = {
 };
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { token } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  if (!token) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Spin size="large" tip="加载中..." />
+      </div>
+    );
   }
 
-  return children;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
