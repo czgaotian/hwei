@@ -1,15 +1,30 @@
 import { DrizzleDB } from "../types";
 import { articles, articleTags, articleMedia, tags, media } from "../db/schema";
-import { eq, isNull, and, desc, count } from "drizzle-orm";
+import { eq, isNull, and, desc, count, like, or } from "drizzle-orm";
 import { PostStatus } from "../types/post";
 
 export const getArticles = async (
   db: DrizzleDB,
-  options?: { page?: number; pageSize?: number },
+  options?: { page?: number; pageSize?: number; search?: string },
 ) => {
   const page = options?.page ?? 1;
   const pageSize = options?.pageSize ?? 10;
   const offset = (page - 1) * pageSize;
+  const search = options?.search;
+
+  // 构建搜索条件 - 搜索title, subtitle, content
+  const searchCondition = search
+    ? or(
+        like(articles.title, `%${search}%`),
+        like(articles.subtitle, `%${search}%`),
+        like(articles.content, `%${search}%`),
+      )
+    : undefined;
+
+  // 组合条件
+  const whereCondition = searchCondition
+    ? and(isNull(articles.deletedAt), searchCondition)
+    : isNull(articles.deletedAt);
 
   const [data, totalResult] = await Promise.all([
     db
@@ -29,14 +44,11 @@ export const getArticles = async (
         deletedAt: articles.deletedAt,
       })
       .from(articles)
-      .where(isNull(articles.deletedAt))
+      .where(whereCondition)
       .orderBy(desc(articles.pinned), desc(articles.createdAt))
       .limit(pageSize)
       .offset(offset),
-    db
-      .select({ count: count() })
-      .from(articles)
-      .where(isNull(articles.deletedAt)),
+    db.select({ count: count() }).from(articles).where(whereCondition),
   ]);
 
   return {

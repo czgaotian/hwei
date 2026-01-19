@@ -35,11 +35,12 @@ const getCategories = createRoute({
 
 app.openapi(getCategories, async (c) => {
   const db = getBlogDatabase(c);
-  const { page, pageSize } = c.req.valid("query");
+  const { page, pageSize, search } = c.req.valid("query");
 
   const { data, total } = await categoryModule.getCategories(db, {
     page,
     pageSize,
+    search,
   });
 
   return c.json(

@@ -1,23 +1,30 @@
 import { DrizzleDB } from "../types";
 import { media, articleMedia } from "../db/schema";
-import { eq, count, desc } from "drizzle-orm";
+import { eq, count, desc, like } from "drizzle-orm";
 
 export const getMediaList = async (
   db: DrizzleDB,
-  options?: { page?: number; pageSize?: number },
+  options?: { page?: number; pageSize?: number; search?: string },
 ) => {
   const page = options?.page ?? 1;
   const pageSize = options?.pageSize ?? 10;
   const offset = (page - 1) * pageSize;
+  const search = options?.search;
+
+  // 构建查询条件
+  const whereCondition = search
+    ? like(media.filename, `%${search}%`)
+    : undefined;
 
   const [data, totalResult] = await Promise.all([
     db
       .select()
       .from(media)
+      .where(whereCondition)
       .orderBy(desc(media.createdAt))
       .limit(pageSize)
       .offset(offset),
-    db.select({ count: count() }).from(media),
+    db.select({ count: count() }).from(media).where(whereCondition),
   ]);
 
   return {

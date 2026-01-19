@@ -34,11 +34,12 @@ const getMediaList = createRoute({
 
 app.openapi(getMediaList, async (c) => {
   const db = getBlogDatabase(c);
-  const { page, pageSize } = c.req.valid("query");
+  const { page, pageSize, search } = c.req.valid("query");
 
   const { data, total } = await mediaModule.getMediaList(db, {
     page,
     pageSize,
+    search,
   });
 
   return c.json(

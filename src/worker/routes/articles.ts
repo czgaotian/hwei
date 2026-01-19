@@ -35,11 +35,12 @@ const getArticles = createRoute({
 
 app.openapi(getArticles, async (c) => {
   const db = getBlogDatabase(c);
-  const { page, pageSize } = c.req.valid("query");
+  const { page, pageSize, search } = c.req.valid("query");
 
   const { data, total } = await articleModule.getArticles(db, {
     page,
     pageSize,
+    search,
   });
 
   return c.json(

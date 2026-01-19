@@ -29,6 +29,16 @@ export const PaginationQuerySchema = z.object({
       },
       example: 10,
     }),
+  search: z
+    .string()
+    .optional()
+    .openapi({
+      param: {
+        name: "search",
+        in: "query",
+      },
+      example: "keyword",
+    }),
 });
 
 export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(

@@ -35,9 +35,13 @@ const getTags = createRoute({
 
 app.openapi(getTags, async (c) => {
   const db = getBlogDatabase(c);
-  const { page, pageSize } = c.req.valid("query");
+  const { page, pageSize, search } = c.req.valid("query");
 
-  const { data, total } = await tagModule.getTags(db, { page, pageSize });
+  const { data, total } = await tagModule.getTags(db, {
+    page,
+    pageSize,
+    search,
+  });
 
   return c.json(
     {

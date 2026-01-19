@@ -1,18 +1,29 @@
 import { DrizzleDB } from "../types";
 import { categories, articles } from "../db/schema";
-import { eq, count } from "drizzle-orm";
+import { eq, count, like } from "drizzle-orm";
 
 export const getCategories = async (
   db: DrizzleDB,
-  options?: { page?: number; pageSize?: number },
+  options?: { page?: number; pageSize?: number; search?: string },
 ) => {
   const page = options?.page ?? 1;
   const pageSize = options?.pageSize ?? 10;
   const offset = (page - 1) * pageSize;
+  const search = options?.search;
+
+  // 构建查询条件
+  const whereCondition = search
+    ? like(categories.name, `%${search}%`)
+    : undefined;
 
   const [data, totalResult] = await Promise.all([
-    db.select().from(categories).limit(pageSize).offset(offset),
-    db.select({ count: count() }).from(categories),
+    db
+      .select()
+      .from(categories)
+      .where(whereCondition)
+      .limit(pageSize)
+      .offset(offset),
+    db.select({ count: count() }).from(categories).where(whereCondition),
   ]);
 
   return {
