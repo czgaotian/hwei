@@ -97,7 +97,10 @@ const TagSelect: React.FC<TagSelectProps> = ({
     onClose: () => void;
   }) => {
     const tag = tags.find((t) => t.id === props.value);
-    if (!tag) return null;
+    if (!tag) {
+      // Return a fallback element instead of null
+      return <span>{props.label}</span>;
+    }
 
     return (
       <TagItem
@@ -110,16 +113,14 @@ const TagSelect: React.FC<TagSelectProps> = ({
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space orientation="vertical" style={{ width: "100%" }}>
       <Select
         mode="multiple"
         placeholder={placeholder}
         value={value}
         onChange={handleChange}
-        onSearch={handleSearch}
         loading={loading}
-        showSearch
-        filterOption={false} // 使用服务端搜索
+        showSearch={{ onSearch: handleSearch, filterOption: false }}
         tagRender={tagRender}
         options={options}
         style={{ width: "100%" }}
