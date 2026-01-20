@@ -17,15 +17,19 @@ import {
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
-import { tagsApi } from "@frontend/api/tags";
-import type { Tag, CreateTagInput, UpdateTagInput } from "@frontend/api/tags";
-import TagModal from "./TagModal";
+import { categoriesApi } from "@frontend/api/categories";
+import type {
+  Category,
+  CreateCategoryInput,
+  UpdateCategoryInput,
+} from "@frontend/api/categories";
+import CategoryModal from "./CategoryModal";
 import dayjs from "dayjs";
 
 const { Search } = Input;
 const { Text } = Typography;
 
-interface TagListState {
+interface CategoryListState {
   searchKeyword: string;
   pagination: {
     page: number;
@@ -33,11 +37,11 @@ interface TagListState {
   };
   modalVisible: boolean;
   modalMode: "create" | "edit";
-  editingTag: Tag | null;
+  editingCategory: Category | null;
 }
 
-const TagList: React.FC = () => {
-  const [state, setState] = useState<TagListState>(() => ({
+const CategoryList: React.FC = () => {
+  const [state, setState] = useState<CategoryListState>(() => ({
     searchKeyword: "",
     pagination: {
       page: 1,
@@ -45,23 +49,28 @@ const TagList: React.FC = () => {
     },
     modalVisible: false,
     modalMode: "create",
-    editingTag: null,
+    editingCategory: null,
   }));
 
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const { data, isLoading, mutate } = useSWR(
-    ["tags", state.pagination.page, state.pagination.pageSize, debouncedSearch],
-    ([, page, pageSize, search]) =>
-      tagsApi.getTags({
+    [
+      "categories",
+      state.pagination.page,
+      state.pagination.pageSize,
+      debouncedSearch,
+    ],
+    ([, page, pageSize, keyword]) =>
+      categoriesApi.getCategories({
         page,
         pageSize,
-        search: search || undefined,
+        keyword: keyword || undefined,
       }),
     {
       revalidateOnFocus: false,
       onError: () => {
-        message.error("加载标签列表失败");
+        message.error("加载分类列表失败");
       },
     },
   );
@@ -78,34 +87,40 @@ const TagList: React.FC = () => {
     return () => clearTimeout(timer);
   }, [state.searchKeyword]);
 
-  // 打开新建标签 Modal - 使用 useCallback
+  // 打开新建分类 Modal - 使用 useCallback
   const handleCreate = useCallback(() => {
     setState((prev) => ({
       ...prev,
       modalVisible: true,
       modalMode: "create",
-      editingTag: null,
+      editingCategory: null,
     }));
   }, []);
 
-  // 打开编辑标签 Modal - 使用 useCallback
-  const handleEdit = useCallback((tag: Tag) => {
+  // 打开编辑分类 Modal - 使用 useCallback
+  const handleEdit = useCallback((category: Category) => {
     setState((prev) => ({
       ...prev,
       modalVisible: true,
       modalMode: "edit",
-      editingTag: tag,
+      editingCategory: category,
     }));
   }, []);
 
-  // 删除标签 - 使用 useCallback
+  // 删除分类 - 使用 useCallback
   const handleDelete = useCallback(
-    (tag: Tag) => {
-      const articleCount = tag.articleCount || 0;
-      const content =
-        articleCount > 0
-          ? `该标签关联了 ${articleCount} 篇文章，删除后文章将失去该标签，确定要删除吗？`
-          : `确定要删除标签「${tag.name}」吗？此操作不可撤销。`;
+    (category: Category) => {
+      const articleCount = category.articleCount || 0;
+
+      // 如果有关联文章，禁止删除
+      if (articleCount > 0) {
+        message.warning(
+          `该分类下有 ${articleCount} 篇文章，请先移除文章关联后再删除`,
+        );
+        return;
+      }
+
+      const content = `确定要删除分类「${category.name}」吗？此操作不可撤销。`;
 
       Modal.confirm({
         title: "确认删除",
@@ -116,12 +131,12 @@ const TagList: React.FC = () => {
         cancelText: "取消",
         onOk: async () => {
           try {
-            await tagsApi.deleteTag(tag.id);
-            message.success("标签删除成功");
+            await categoriesApi.deleteCategory(category.id);
+            message.success("分类删除成功");
 
-            const currentTags = data?.data.data || [];
+            const currentCategories = data?.data.data || [];
             const shouldGoBack =
-              currentTags.length === 1 && state.pagination.page > 1;
+              currentCategories.length === 1 && state.pagination.page > 1;
             if (shouldGoBack) {
               setState((prev) => ({
                 ...prev,
@@ -151,13 +166,13 @@ const TagList: React.FC = () => {
   );
 
   // 表格列定义 - 使用 useMemo（rerender-memo）
-  const columns: ColumnsType<Tag> = useMemo(
+  const columns: ColumnsType<Category> = useMemo(
     () => [
       {
-        title: "标签名称",
+        title: "分类名称",
         dataIndex: "name",
         key: "name",
-        render: (name: string, record: Tag) => (
+        render: (name: string, record: Category) => (
           <Space>
             <span
               style={{
@@ -222,25 +237,36 @@ const TagList: React.FC = () => {
         key: "actions",
         width: 120,
         fixed: "right",
-        render: (_, record: Tag) => (
-          <Space>
-            <Button
-              type="link"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            >
-              编辑
-            </Button>
-            <Button
-              type="link"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-            >
-              删除
-            </Button>
-          </Space>
-        ),
+        render: (_, record: Category) => {
+          const articleCount = record.articleCount || 0;
+          const canDelete = articleCount === 0;
+
+          return (
+            <Space>
+              <Button
+                type="link"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+              >
+                编辑
+              </Button>
+              <Button
+                type="link"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(record)}
+                disabled={!canDelete}
+                title={
+                  canDelete
+                    ? undefined
+                    : `该分类下有 ${articleCount} 篇文章，无法删除`
+                }
+              >
+                删除
+              </Button>
+            </Space>
+          );
+        },
       },
     ],
     [handleEdit, handleDelete],
@@ -248,14 +274,14 @@ const TagList: React.FC = () => {
 
   // 提交表单 - 使用 useCallback
   const handleSubmit = useCallback(
-    async (data: CreateTagInput | UpdateTagInput) => {
+    async (data: CreateCategoryInput | UpdateCategoryInput) => {
       if (state.modalMode === "create") {
-        await tagsApi.createTag(data as CreateTagInput);
-      } else if (state.editingTag) {
-        await tagsApi.updateTag(state.editingTag.id, data);
+        await categoriesApi.createCategory(data as CreateCategoryInput);
+      } else if (state.editingCategory) {
+        await categoriesApi.updateCategory(state.editingCategory.id, data);
       }
     },
-    [state.modalMode, state.editingTag],
+    [state.modalMode, state.editingCategory],
   );
 
   // Modal 关闭 - 使用 useCallback
@@ -263,7 +289,7 @@ const TagList: React.FC = () => {
     setState((prev) => ({
       ...prev,
       modalVisible: false,
-      editingTag: null,
+      editingCategory: null,
     }));
   }, []);
 
@@ -271,7 +297,7 @@ const TagList: React.FC = () => {
     setState((prev) => ({
       ...prev,
       modalVisible: false,
-      editingTag: null,
+      editingCategory: null,
     }));
     mutate();
   }, [mutate]);
@@ -306,10 +332,10 @@ const TagList: React.FC = () => {
         }}
       >
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          新建标签
+          新建分类
         </Button>
         <Search
-          placeholder="搜索标签名称"
+          placeholder="搜索分类名称"
           allowClear
           style={{ width: 300 }}
           onSearch={handleSearch}
@@ -323,7 +349,7 @@ const TagList: React.FC = () => {
         />
       </Space>
 
-      {/* 标签列表 */}
+      {/* 分类列表 */}
       <Table
         columns={columns}
         dataSource={data?.data.data || []}
@@ -339,15 +365,15 @@ const TagList: React.FC = () => {
         }}
         onChange={handleTableChange}
         locale={{
-          emptyText: state.searchKeyword ? "未找到匹配的标签" : "暂无标签",
+          emptyText: state.searchKeyword ? "未找到匹配的分类" : "暂无分类",
         }}
       />
 
       {/* 创建/编辑 Modal */}
-      <TagModal
+      <CategoryModal
         visible={state.modalVisible}
         mode={state.modalMode}
-        tag={state.editingTag}
+        category={state.editingCategory}
         onCancel={handleModalCancel}
         onSuccess={handleModalSuccess}
         onSubmit={handleSubmit}
@@ -356,4 +382,4 @@ const TagList: React.FC = () => {
   );
 };
 
-export default TagList;
+export default CategoryList;

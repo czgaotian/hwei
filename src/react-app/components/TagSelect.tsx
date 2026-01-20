@@ -121,7 +121,6 @@ const TagSelect: React.FC<TagSelectProps> = ({
       return tag ? (
         <TagItem
           tag={{ name: tag.name, color: tag.color }}
-          size="small"
           closable={props.closable}
           onClose={props.onClose}
         />

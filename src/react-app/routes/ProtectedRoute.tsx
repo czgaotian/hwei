@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           height: "100vh",
         }}
       >
-        <Spin size="large" tip="加载中..." />
+        <Spin tip="加载中..." />
       </div>
     );
   }

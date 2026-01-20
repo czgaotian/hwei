@@ -9,6 +9,7 @@ const Login = lazy(() => import("../pages/Login"));
 const Setup = lazy(() => import("../pages/Setup"));
 const NotMatch = lazy(() => import("../pages/NotMatch"));
 const TagList = lazy(() => import("../pages/tags"));
+const CategoryList = lazy(() => import("../pages/categories"));
 
 // \u52a0\u8f7d\u6307\u793a\u5668\u7ec4\u4ef6\uff08rendering-hoist-jsx\uff09
 const LoadingFallback = () => (
@@ -20,7 +21,7 @@ const LoadingFallback = () => (
       height: "100vh",
     }}
   >
-    <Spin size="large" />
+    <Spin />
   </div>
 );
 
@@ -45,7 +46,7 @@ const AppRoutes = () => {
           <Route path="articles/new" element={<div>新建文章</div>} />
           <Route path="articles/:id/edit" element={<div>编辑文章</div>} />
           <Route path="tags" element={<TagList />} />
-          <Route path="categories" element={<div>分类管理</div>} />
+          <Route path="categories" element={<CategoryList />} />
           <Route path="media" element={<div>媒体管理</div>} />
           <Route path="*" element={<NotMatch />} />
         </Route>
