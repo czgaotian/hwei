@@ -12,14 +12,11 @@ const router = new OpenAPIHono<Context>();
 // Public routes - no authentication required
 router.route("/auth", authRoutes);
 
-// Admin routes - authentication required
-const adminRouter = new OpenAPIHono<Context>();
-adminRouter.use("/*", authMiddleware());
-adminRouter.route("/articles", articleRoutes);
-adminRouter.route("/categories", categoryRoutes);
-adminRouter.route("/tags", tagRoutes);
-adminRouter.route("/media", mediaRoutes);
-
-router.route("/admin", adminRouter);
+// Protected routes - authentication required
+router.use("*", authMiddleware());
+router.route("/tags", tagRoutes);
+router.route("/articles", articleRoutes);
+router.route("/categories", categoryRoutes);
+router.route("/media", mediaRoutes);
 
 export default router;
