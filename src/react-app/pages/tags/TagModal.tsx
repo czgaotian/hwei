@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Modal, Form, Input, ColorPicker, message } from "antd";
-import { Tag, CreateTagInput, UpdateTagInput } from "@frontend/api/tags";
+import type { Tag, CreateTagInput, UpdateTagInput } from "@frontend/api/tags";
 import { Color } from "antd/es/color-picker";
 
 interface TagModalProps {
@@ -11,6 +11,21 @@ interface TagModalProps {
   onSuccess: () => void;
   onSubmit: (data: CreateTagInput | UpdateTagInput) => Promise<void>;
 }
+
+// 预设颜色（rendering-hoist-jsx）
+const PRESET_COLORS = [
+  "#eb2f96", // magenta
+  "#f5222d", // red
+  "#fa541c", // volcano
+  "#fa8c16", // orange
+  "#faad14", // gold
+  "#a0d911", // lime
+  "#52c41a", // green
+  "#13c2c2", // cyan
+  "#1677ff", // blue
+  "#2f54eb", // geekblue
+  "#722ed1", // purple
+] as const;
 
 const TagModal: React.FC<TagModalProps> = ({
   visible,
@@ -23,21 +38,6 @@ const TagModal: React.FC<TagModalProps> = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-
-  // 预设颜色
-  const presetColors = [
-    "#eb2f96", // magenta
-    "#f5222d", // red
-    "#fa541c", // volcano
-    "#fa8c16", // orange
-    "#faad14", // gold
-    "#a0d911", // lime
-    "#52c41a", // green
-    "#13c2c2", // cyan
-    "#1677ff", // blue
-    "#2f54eb", // geekblue
-    "#722ed1", // purple
-  ];
 
   useEffect(() => {
     if (visible) {
@@ -56,7 +56,7 @@ const TagModal: React.FC<TagModalProps> = ({
     }
   }, [visible, mode, tag, form]);
 
-  const handleOk = async () => {
+  const handleOk = useCallback(async () => {
     try {
       const values = await form.validateFields();
 
@@ -96,9 +96,9 @@ const TagModal: React.FC<TagModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, mode, onSubmit, onSuccess]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     if (hasChanges) {
       Modal.confirm({
         title: "确定要放弃当前编辑吗？",
@@ -115,11 +115,11 @@ const TagModal: React.FC<TagModalProps> = ({
       form.resetFields();
       onCancel();
     }
-  };
+  }, [hasChanges, form, onCancel]);
 
-  const handleValuesChange = () => {
+  const handleValuesChange = useCallback(() => {
     setHasChanges(true);
-  };
+  }, []);
 
   return (
     <Modal
@@ -163,7 +163,7 @@ const TagModal: React.FC<TagModalProps> = ({
             presets={[
               {
                 label: "推荐颜色",
-                colors: presetColors,
+                colors: PRESET_COLORS as unknown as string[],
               },
             ]}
             showText

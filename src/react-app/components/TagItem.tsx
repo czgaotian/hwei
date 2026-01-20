@@ -11,50 +11,40 @@ export interface TagItemProps {
   onClose?: () => void;
 }
 
+// 预计算尺寸映射表（rendering-hoist-jsx + js-cache-property-access）
+const SIZE_CONFIG = {
+  small: { fontSize: "12px", padding: "2px 6px" },
+  default: { fontSize: "14px", padding: "4px 8px" },
+  large: { fontSize: "16px", padding: "6px 12px" },
+} as const;
+
 const TagItem: React.FC<TagItemProps> = ({
   tag,
   size = "default",
   closable = false,
   onClose,
 }) => {
-  const getFontSize = () => {
-    switch (size) {
-      case "small":
-        return "12px";
-      case "large":
-        return "16px";
-      default:
-        return "14px";
-    }
-  };
-
-  const getPadding = () => {
-    switch (size) {
-      case "small":
-        return "2px 6px";
-      case "large":
-        return "6px 12px";
-      default:
-        return "4px 8px";
-    }
-  };
+  // 缓存配置查找（js-cache-property-access）
+  const config = SIZE_CONFIG[size];
+  const { name, color } = tag;
 
   return (
     <Tag
-      color={tag.color}
+      color={color}
       closable={closable}
       onClose={onClose}
       style={{
         borderRadius: "4px",
-        padding: getPadding(),
-        fontSize: getFontSize(),
-        border: `1px solid ${tag.color}`,
-        backgroundColor: `${tag.color}15`, // 15% opacity
+        padding: config.padding,
+        fontSize: config.fontSize,
+        border: `1px solid ${color}`,
+        backgroundColor: `${color}15`, // 15% opacity
       }}
     >
-      {tag.name}
+      {name}
     </Tag>
   );
 };
 
-export default TagItem;
+// 使用 React.memo 避免不必要的重新渲染（rerender-memo）
+export default React.memo(TagItem);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Form, Input, Button, Card, message, Typography } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { authApi } from "@frontend/api/auth";
@@ -17,26 +17,29 @@ const Setup: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  const onFinish = async (values: SetupFormValues) => {
-    setLoading(true);
-    try {
-      await authApi.register({
-        username: values.username,
-        password: values.password,
-      });
-      message.success("管理员账号创建成功！请登录");
-      navigate("/login");
-    } catch (error: unknown) {
-      const errorMessage =
-        error && typeof error === "object" && "response" in error
-          ? (error as { response?: { data?: { error?: string } } }).response
-              ?.data?.error
-          : undefined;
-      message.error(errorMessage || "初始化失败，请重试");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const onFinish = useCallback(
+    async (values: SetupFormValues) => {
+      setLoading(true);
+      try {
+        await authApi.register({
+          username: values.username,
+          password: values.password,
+        });
+        message.success("管理员账号创建成功！请登录");
+        navigate("/login");
+      } catch (error: unknown) {
+        const errorMessage =
+          error && typeof error === "object" && "response" in error
+            ? (error as { response?: { data?: { error?: string } } }).response
+                ?.data?.error
+            : undefined;
+        message.error(errorMessage || "初始化失败，请重试");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [navigate],
+  );
 
   return (
     <div

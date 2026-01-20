@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Select, message, Button, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { tagsApi, Tag } from "@frontend/api/tags";
+import { tagsApi } from "@frontend/api/tags";
+import type { Tag } from "@frontend/api/tags";
 import TagItem from "./TagItem";
 
 export interface TagSelectProps {
@@ -21,7 +22,8 @@ const TagSelect: React.FC<TagSelectProps> = ({
   allowCreate = false,
   onCreateClick,
 }) => {
-  const [tags, setTags] = useState<Tag[]>([]);
+  // 使用惰性初始化（rerender-lazy-state-init）
+  const [tags, setTags] = useState<Tag[]>(() => []);
   const [loading, setLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
@@ -58,59 +60,77 @@ const TagSelect: React.FC<TagSelectProps> = ({
     return () => clearTimeout(timer);
   }, [searchValue]);
 
-  const handleChange = (selectedIds: number[]) => {
-    onChange?.(selectedIds);
-  };
+  // 使用 useCallback 稳定回调引用（rerender-functional-setstate + advanced-event-handler-refs）
+  const handleChange = useCallback(
+    (selectedIds: number[]) => {
+      onChange?.(selectedIds);
+    },
+    [onChange],
+  );
 
-  const handleSearch = (val: string) => {
+  const handleSearch = useCallback((val: string) => {
     setSearchValue(val);
-  };
+  }, []);
 
-  // 生成选项
-  const options = tags.map((tag) => ({
-    label: (
-      <Space>
-        <span
-          style={{
-            display: "inline-block",
-            width: "12px",
-            height: "12px",
-            borderRadius: "2px",
-            backgroundColor: tag.color,
-          }}
-        />
-        <span>{tag.name}</span>
-      </Space>
-    ),
-    value: tag.id,
-    disabled:
-      maxCount !== undefined &&
-      value.length >= maxCount &&
-      !value.includes(tag.id),
-  }));
+  // 使用 useMemo 缓存计算结果（rerender-memo）
+  const options = useMemo(
+    () =>
+      tags.map((tag) => ({
+        label: (
+          <Space>
+            <span
+              style={{
+                display: "inline-block",
+                width: "12px",
+                height: "12px",
+                borderRadius: "2px",
+                backgroundColor: tag.color,
+              }}
+            />
+            <span>{tag.name}</span>
+          </Space>
+        ),
+        value: tag.id,
+        disabled:
+          maxCount !== undefined &&
+          value.length >= maxCount &&
+          !value.includes(tag.id),
+      })),
+    [tags, maxCount, value],
+  );
+
+  // 使用 useCallback + Map 优化查找性能（js-set-map-lookups + rerender-functional-setstate）
+  const tagsMap = useMemo(() => {
+    const map = new Map<number, Tag>();
+    for (const tag of tags) {
+      map.set(tag.id, tag);
+    }
+    return map;
+  }, [tags]);
 
   // 渲染已选标签
-  const tagRender = (props: {
-    label: React.ReactNode;
-    value: number;
-    closable: boolean;
-    onClose: () => void;
-  }) => {
-    const tag = tags.find((t) => t.id === props.value);
-    if (!tag) {
-      // Return a fallback element instead of null
-      return <span>{props.label}</span>;
-    }
-
-    return (
-      <TagItem
-        tag={{ name: tag.name, color: tag.color }}
-        size="small"
-        closable={props.closable}
-        onClose={props.onClose}
-      />
-    );
-  };
+  const tagRender = useCallback(
+    (props: {
+      label: React.ReactNode;
+      value: number;
+      closable: boolean;
+      onClose: () => void;
+    }) => {
+      const tag = tagsMap.get(props.value);
+      // 使用三元运算符而非 && （rendering-conditional-render）
+      return tag ? (
+        <TagItem
+          tag={{ name: tag.name, color: tag.color }}
+          size="small"
+          closable={props.closable}
+          onClose={props.onClose}
+        />
+      ) : (
+        <span>{props.label}</span>
+      );
+    },
+    [tagsMap],
+  );
 
   return (
     <Space orientation="vertical" style={{ width: "100%" }}>

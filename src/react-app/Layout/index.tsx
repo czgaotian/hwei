@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -41,7 +41,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = ({ children }) => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     Modal.confirm({
       title: "确定要退出登录吗？",
       content: "退出后需要重新登录才能访问系统",
@@ -52,21 +52,31 @@ const BasicLayout: React.FC<BasicLayoutProps> = ({ children }) => {
           await logout();
           message.success("已退出登录");
           navigate("/login");
-        } catch (error) {
+        } catch (error: unknown) {
           message.error("退出失败，请重试");
+          console.error(error);
         }
       },
     });
-  };
+  }, [logout, navigate]);
 
-  const userMenuItems: MenuProps["items"] = [
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "退出登录",
-      onClick: handleLogout,
-    },
-  ];
+  // 使用 useMemo 缓存菜单项（rerender-memo）
+  const userMenuItems: MenuProps["items"] = useMemo(
+    () => [
+      {
+        key: "logout",
+        icon: <LogoutOutlined />,
+        label: "退出登录",
+        onClick: handleLogout,
+      },
+    ],
+    [handleLogout],
+  );
+
+  // 使用 useCallback 优化按钮点击（rerender-functional-setstate）
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => !prev);
+  }, []);
 
   return (
     <Layout hasSider style={basicLayoutStyle}>
@@ -84,7 +94,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = ({ children }) => {
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={toggleCollapsed}
             style={{
               fontSize: "16px",
               width: 64,

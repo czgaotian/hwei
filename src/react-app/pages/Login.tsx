@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Form, Input, Button, Card, message, Typography } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useAuth } from "@frontend/context/authContext";
@@ -17,26 +17,29 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const onFinish = async (values: LoginFormValues) => {
-    setLoading(true);
-    try {
-      await login(values.username, values.password);
-      message.success("登录成功！");
+  const onFinish = useCallback(
+    async (values: LoginFormValues) => {
+      setLoading(true);
+      try {
+        await login(values.username, values.password);
+        message.success("登录成功！");
 
-      // 跳转到来源页或默认首页
-      const from = (location.state as { from?: string } | null)?.from || "/";
-      navigate(from, { replace: true });
-    } catch (error: unknown) {
-      const errorMessage =
-        error && typeof error === "object" && "response" in error
-          ? (error as { response?: { data?: { error?: string } } }).response
-              ?.data?.error
-          : undefined;
-      message.error(errorMessage || "登录失败，请检查用户名和密码");
-    } finally {
-      setLoading(false);
-    }
-  };
+        // 跳转到来源页或默认首页
+        const from = (location.state as { from?: string } | null)?.from || "/";
+        navigate(from, { replace: true });
+      } catch (error: unknown) {
+        const errorMessage =
+          error && typeof error === "object" && "response" in error
+            ? (error as { response?: { data?: { error?: string } } }).response
+                ?.data?.error
+            : undefined;
+        message.error(errorMessage || "登录失败，请检查用户名和密码");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [login, location.state, navigate],
+  );
 
   return (
     <div
