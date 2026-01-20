@@ -1,84 +1,76 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { AuthContext, User } from "./authContext";
+import { useCallback, useMemo } from "react";
+import useSWR from "swr";
+import { AuthContext } from "./authContext";
 import { authApi } from "@frontend/api/auth";
 
 type AuthProviderProps = {
   children: React.ReactNode;
 };
 
-interface AuthState {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  user: User | null;
-}
-
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  // 使用惰性初始化（rerender-lazy-state-init）
-  const [state, setState] = useState<AuthState>(() => ({
-    isAuthenticated: false,
-    isLoading: true,
-    user: null,
-  }));
-
-  // 检查认证状态 - 使用 useCallback
-  const checkAuth = useCallback(async () => {
-    try {
-      const response = await authApi.verify();
-      if (response.data.valid && response.data.user) {
-        setState({
-          isAuthenticated: true,
-          isLoading: false,
-          user: response.data.user,
-        });
-      } else {
-        setState({
+  const { data, isLoading, mutate } = useSWR(
+    "auth-verify",
+    async () => {
+      try {
+        const response = await authApi.verify();
+        if (response.data.valid && response.data.user) {
+          return {
+            isAuthenticated: true,
+            user: response.data.user,
+          };
+        }
+        return {
           isAuthenticated: false,
-          isLoading: false,
           user: null,
-        });
+        };
+      } catch {
+        return {
+          isAuthenticated: false,
+          user: null,
+        };
       }
-    } catch (error) {
-      setState({
-        isAuthenticated: false,
-        isLoading: false,
-        user: null,
-      });
-    }
-  }, []);
+    },
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      shouldRetryOnError: false,
+      dedupingInterval: 5000,
+    },
+  );
 
-  // 登录 - 使用 useCallback
+  const checkAuth = useCallback(async () => {
+    await mutate();
+  }, [mutate]);
+
   const login = useCallback(
     async (username: string, password: string) => {
       await authApi.login({ username, password });
-      await checkAuth(); // 登录成功后重新检查状态
+      await mutate();
     },
-    [checkAuth],
+    [mutate],
   );
 
-  // 登出 - 使用 useCallback
   const logout = useCallback(async () => {
     await authApi.logout();
-    setState({
-      isAuthenticated: false,
-      isLoading: false,
-      user: null,
-    });
-  }, []);
+    await mutate(
+      {
+        isAuthenticated: false,
+        user: null,
+      },
+      false,
+    );
+  }, [mutate]);
 
-  // 应用启动时检查认证状态
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  // 使用 useMemo 缓存 context value（rerender-memo）
   const value = useMemo(
     () => ({
-      ...state,
+      isAuthenticated: data?.isAuthenticated ?? false,
+      isLoading,
+      user: data?.user ?? null,
       login,
       logout,
       checkAuth,
     }),
-    [state, login, logout, checkAuth],
+    [data, isLoading, login, logout, checkAuth],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
