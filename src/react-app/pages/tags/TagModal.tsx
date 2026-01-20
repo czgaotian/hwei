@@ -39,22 +39,26 @@ const TagModal: React.FC<TagModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // 根据 mode 和 tag 动态计算初始值
+  const initialValues = React.useMemo(() => {
+    if (mode === "edit" && tag) {
+      return {
+        name: tag.name,
+        color: tag.color,
+      };
+    }
+    return {
+      name: "",
+      color: "#52c41a", // 默认绿色
+    };
+  }, [mode, tag]);
+
+  // 当 Modal 打开时，重置 hasChanges 状态
   useEffect(() => {
     if (visible) {
-      if (mode === "edit" && tag) {
-        form.setFieldsValue({
-          name: tag.name,
-          color: tag.color,
-        });
-      } else {
-        form.setFieldsValue({
-          name: "",
-          color: "#52c41a", // 默认绿色
-        });
-      }
       setHasChanges(false);
     }
-  }, [visible, mode, tag, form]);
+  }, [visible]);
 
   const handleOk = useCallback(async () => {
     try {
@@ -131,12 +135,13 @@ const TagModal: React.FC<TagModalProps> = ({
       width={480}
       okText="确定"
       cancelText="取消"
-      destroyOnClose
+      destroyOnHidden
     >
       <Form
         form={form}
         layout="vertical"
         onValuesChange={handleValuesChange}
+        initialValues={initialValues}
         preserve={false}
       >
         <Form.Item

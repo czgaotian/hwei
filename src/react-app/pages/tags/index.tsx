@@ -251,16 +251,13 @@ const TagList: React.FC = () => {
   // 提交表单 - 使用 useCallback
   const handleSubmit = useCallback(
     async (data: CreateTagInput | UpdateTagInput) => {
-      setState((prev) => {
-        if (prev.modalMode === "create") {
-          tagsApi.createTag(data as CreateTagInput);
-        } else if (prev.editingTag) {
-          tagsApi.updateTag(prev.editingTag.id, data);
-        }
-        return prev;
-      });
+      if (state.modalMode === "create") {
+        await tagsApi.createTag(data as CreateTagInput);
+      } else if (state.editingTag) {
+        await tagsApi.updateTag(state.editingTag.id, data);
+      }
     },
-    [],
+    [state.modalMode, state.editingTag],
   );
 
   // Modal 关闭 - 使用 useCallback
