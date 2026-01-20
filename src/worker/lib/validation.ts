@@ -41,6 +41,32 @@ export const PaginationQuerySchema = z.object({
     }),
 });
 
+// Articles list query with filters
+export const ArticleListQuerySchema = PaginationQuerySchema.extend({
+  status: z
+    .enum(["draft", "published"])
+    .optional()
+    .openapi({
+      param: {
+        name: "status",
+        in: "query",
+      },
+      example: "published",
+    }),
+  categoryId: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .openapi({
+      param: {
+        name: "categoryId",
+        in: "query",
+      },
+      example: 1,
+    }),
+});
+
 export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
   itemSchema: T,
 ) =>

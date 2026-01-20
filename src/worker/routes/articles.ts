@@ -8,8 +8,8 @@ import {
   CreateArticleSchema,
   UpdateArticleSchema,
   ArticleIdParamSchema,
-  PaginationQuerySchema,
   PaginatedResponseSchema,
+  ArticleListQuerySchema,
 } from "../lib/validation";
 
 const app = new OpenAPIHono<Context>();
@@ -19,7 +19,7 @@ const getArticles = createRoute({
   method: "get",
   path: "/",
   request: {
-    query: PaginationQuerySchema,
+    query: ArticleListQuerySchema,
   },
   responses: {
     200: {
@@ -35,12 +35,14 @@ const getArticles = createRoute({
 
 app.openapi(getArticles, async (c) => {
   const db = getBlogDatabase(c);
-  const { page, pageSize, search } = c.req.valid("query");
+  const { page, pageSize, search, status, categoryId } = c.req.valid("query");
 
   const { data, total } = await articleModule.getArticles(db, {
     page,
     pageSize,
     search,
+    status,
+    categoryId,
   });
 
   return c.json(

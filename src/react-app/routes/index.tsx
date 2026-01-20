@@ -10,6 +10,8 @@ const Setup = lazy(() => import("../pages/Setup"));
 const NotMatch = lazy(() => import("../pages/NotMatch"));
 const TagList = lazy(() => import("../pages/tags"));
 const CategoryList = lazy(() => import("../pages/categories"));
+const ArticleList = lazy(() => import("../pages/articles"));
+const ArticleEditor = lazy(() => import("../pages/articles/ArticleEditor"));
 
 // \u52a0\u8f7d\u6307\u793a\u5668\u7ec4\u4ef6\uff08rendering-hoist-jsx\uff09
 const LoadingFallback = () => (
@@ -42,9 +44,9 @@ const AppRoutes = () => {
           }
         >
           <Route index element={<div>欢迎使用博客 CMS</div>} />
-          <Route path="articles" element={<div>文章列表</div>} />
-          <Route path="articles/new" element={<div>新建文章</div>} />
-          <Route path="articles/:id/edit" element={<div>编辑文章</div>} />
+          <Route path="articles" element={<ArticleList />} />
+          <Route path="articles/new" element={<ArticleEditor />} />
+          <Route path="articles/:id/edit" element={<ArticleEditor />} />
           <Route path="tags" element={<TagList />} />
           <Route path="categories" element={<CategoryList />} />
           <Route path="media" element={<div>媒体管理</div>} />

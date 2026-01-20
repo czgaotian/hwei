@@ -1,16 +1,24 @@
 import { DrizzleDB } from "../types";
 import { articles, articleTags, articleMedia, tags, media } from "../db/schema";
-import { eq, isNull, and, desc, count, like, or } from "drizzle-orm";
+import { eq, isNull, and, desc, count, like, or, SQL } from "drizzle-orm";
 import { PostStatus } from "../types/post";
 
 export const getArticles = async (
   db: DrizzleDB,
-  options?: { page?: number; pageSize?: number; search?: string },
+  options?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    status?: PostStatus;
+    categoryId?: number;
+  },
 ) => {
   const page = options?.page ?? 1;
   const pageSize = options?.pageSize ?? 10;
   const offset = (page - 1) * pageSize;
   const search = options?.search;
+  const status = options?.status;
+  const categoryId = options?.categoryId;
 
   // 构建搜索条件 - 搜索title, subtitle, content
   const searchCondition = search
@@ -21,10 +29,23 @@ export const getArticles = async (
       )
     : undefined;
 
+  // 其他过滤条件
+  const statusCondition = status ? eq(articles.status, status) : undefined;
+  const categoryCondition =
+    typeof categoryId === "number"
+      ? eq(articles.categoryId, categoryId)
+      : undefined;
+
   // 组合条件
-  const whereCondition = searchCondition
-    ? and(isNull(articles.deletedAt), searchCondition)
-    : isNull(articles.deletedAt);
+  const conditions = [
+    isNull(articles.deletedAt),
+    searchCondition,
+    statusCondition,
+    categoryCondition,
+  ].filter((condition): condition is SQL<unknown> => condition !== undefined);
+
+  const whereCondition =
+    conditions.length > 1 ? and(...conditions) : conditions[0];
 
   const [data, totalResult] = await Promise.all([
     db
