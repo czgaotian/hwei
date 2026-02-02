@@ -3,6 +3,8 @@ import { api } from "@frontend/lib/axios";
 export interface Article {
   id: number;
   title: string;
+  subtitle?: string;
+  slug: string;
   summary?: string;
   content: string;
   status: ArticleStatus;
@@ -24,6 +26,8 @@ export type ArticleStatus = "draft" | "published";
 
 export interface CreateArticleInput {
   title: string;
+  subtitle?: string;
+  slug?: string;
   summary?: string;
   content: string;
   status: ArticleStatus;

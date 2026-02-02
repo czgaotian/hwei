@@ -115,7 +115,7 @@ export const CreateArticleSchema = z.object({
     .string()
     .optional()
     .openapi({ example: "An interesting subtitle" }),
-  slug: z.string().min(1).max(255).openapi({ example: "my-blog-article" }),
+  slug: z.string().min(1).max(255).optional().openapi({ example: "my-blog-article" }),
   summary: z.string().optional().openapi({ example: "A brief summary" }),
   content: z
     .string()

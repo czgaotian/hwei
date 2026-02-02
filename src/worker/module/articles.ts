@@ -91,7 +91,7 @@ export const createArticle = async (
   data: {
     title: string;
     subtitle?: string;
-    slug: string;
+    slug?: string;
     summary?: string;
     content: string;
     status?: PostStatus;
@@ -100,10 +100,20 @@ export const createArticle = async (
     coverMediaId?: number;
   },
 ) => {
+  // Auto-generate slug from title if not provided
+  const slug = data.slug || data.title
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-\u4e00-\u9fa5]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^\-+/, '')
+    .replace(/\-+$/, '');
+
   const result = await db
     .insert(articles)
     .values({
       ...data,
+      slug,
       updatedAt: Math.floor(Date.now() / 1000),
     })
     .returning();

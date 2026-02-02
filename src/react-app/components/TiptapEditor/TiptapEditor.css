@@ -1,0 +1,116 @@
+
+.tiptap-editor-wrapper {
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  transition: all 0.2s;
+}
+
+.tiptap-editor-wrapper:focus-within {
+  border-color: #4096ff;
+  box-shadow: 0 0 0 2px rgba(5, 145, 255, 0.1);
+}
+
+.tiptap-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.tiptap-toolbar button {
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #555;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.tiptap-toolbar button:hover {
+  background: #e6f4ff;
+  color: #1677ff;
+}
+
+.tiptap-toolbar button.is-active {
+  background: #e6f7ff;
+  color: #0958d9;
+  border-color: #bae0ff;
+}
+
+.tiptap-content {
+  flex: 1;
+  min-height: 200px;
+  padding: 12px;
+  cursor: text;
+}
+
+.tiptap-content .ProseMirror {
+  outline: none;
+  min-height: 200px;
+}
+
+.tiptap-content .ProseMirror p.is-editor-empty:first-child::before {
+  color: #bfbfbf;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Base styles for Tiptap content */
+.tiptap-content ul,
+.tiptap-content ol {
+  padding: 0 1rem;
+}
+
+.tiptap-content h1,
+.tiptap-content h2,
+.tiptap-content h3,
+.tiptap-content h4,
+.tiptap-content h5,
+.tiptap-content h6 {
+  line-height: 1.1;
+  margin-top: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tiptap-content code {
+  background-color: rgba(#616161, 0.1);
+  color: #616161;
+}
+
+.tiptap-content pre {
+  background: #0d0d0d;
+  color: #fff;
+  font-family: 'JetBrainsMono', monospace;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.tiptap-content pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: 0.8rem;
+}
+
+.tiptap-content blockquote {
+  border-left: 3px solid #0d0d0d;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.tiptap-content hr {
+  border: none;
+  border-top: 2px solid rgba(13, 13, 13, 0.1);
+  margin: 2rem 0;
+}
