@@ -5,7 +5,7 @@ import type {
   CreateCategoryInput,
   UpdateCategoryInput,
 } from "@frontend/api/categories";
-import { Color } from "antd/es/color-picker";
+import type { Color } from "antd/es/color-picker";
 
 interface CategoryModalProps {
   visible: boolean;
@@ -28,6 +28,12 @@ const PRESET_COLORS = [
   "#FAAD14", // 黄色
 ] as const;
 
+// 默认表单值（rendering-hoist-jsx）
+const DEFAULT_FORM_VALUES = {
+  name: "",
+  color: "#1890FF",
+} as const;
+
 const CategoryModal: React.FC<CategoryModalProps> = ({
   visible,
   mode,
@@ -40,26 +46,20 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // 根据 mode 和 category 动态计算初始值
-  const initialValues = React.useMemo(() => {
-    if (mode === "edit" && category) {
-      return {
-        name: category.name,
-        color: category.color,
-      };
-    }
-    return {
-      name: "",
-      color: "#1890FF", // 默认蓝色
-    };
-  }, [mode, category]);
-
-  // 当 Modal 打开时，重置 hasChanges 状态
+  // 当 Modal 打开时，同步表单值
   useEffect(() => {
     if (visible) {
+      if (mode === "edit" && category) {
+        form.setFieldsValue({
+          name: category.name,
+          color: category.color,
+        });
+      } else {
+        form.setFieldsValue(DEFAULT_FORM_VALUES);
+      }
       setHasChanges(false);
     }
-  }, [visible]);
+  }, [visible, mode, category, form]);
 
   const handleOk = useCallback(async () => {
     try {
@@ -78,7 +78,6 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
       });
 
       message.success(mode === "create" ? "分类创建成功" : "分类更新成功");
-      form.resetFields();
       setHasChanges(false);
       onSuccess();
     } catch (error: unknown) {
@@ -87,15 +86,17 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
         return;
       }
 
+      // 简化错误处理
       const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response
-          ? String(error.response.data)
-          : "操作失败";
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" &&
+              error !== null &&
+              "response" in error &&
+              typeof (error as { response?: { data?: unknown } }).response
+                ?.data === "string"
+            ? (error as { response: { data: string } }).response.data
+            : "操作失败";
 
       message.error(errorMessage);
     } finally {
@@ -111,16 +112,14 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
         okText: "确定",
         cancelText: "取消",
         onOk: () => {
-          form.resetFields();
           setHasChanges(false);
           onCancel();
         },
       });
     } else {
-      form.resetFields();
       onCancel();
     }
-  }, [hasChanges, form, onCancel]);
+  }, [hasChanges, onCancel]);
 
   const handleValuesChange = useCallback(() => {
     setHasChanges(true);
@@ -136,15 +135,9 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
       width={480}
       okText="确定"
       cancelText="取消"
-      destroyOnHidden
+      destroyOnClose
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onValuesChange={handleValuesChange}
-        initialValues={initialValues}
-        preserve={false}
-      >
+      <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
         <Form.Item
           name="name"
           label="分类名称"
