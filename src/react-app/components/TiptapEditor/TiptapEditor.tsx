@@ -1,19 +1,18 @@
 import React, { useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, Tiptap } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import Underline from '@tiptap/extension-underline';
+import Highlight from '@tiptap/extension-highlight';
+import Link from '@tiptap/extension-link';
+import Superscript from '@tiptap/extension-superscript';
+import Subscript from '@tiptap/extension-subscript';
+import TextAlign from '@tiptap/extension-text-align';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import { common, createLowlight } from 'lowlight';
 import './TiptapEditor.css';
-import { 
-  BoldOutlined, 
-  ItalicOutlined, 
-  StrikethroughOutlined, 
-  CodeOutlined,
-  UnorderedListOutlined,
-  OrderedListOutlined,
-  MinusOutlined,
-  UndoOutlined,
-  RedoOutlined
-} from '@ant-design/icons';
-import { Tooltip } from 'antd';
+import MenuBar from './MenuBar';
 
 interface TiptapEditorProps {
   value?: string;
@@ -21,140 +20,40 @@ interface TiptapEditorProps {
   placeholder?: string;
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
-  if (!editor) {
-    return null;
-  }
-
-  return (
-    <div className="tiptap-toolbar">
-      <Tooltip title="Bold">
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={editor.isActive('bold') ? 'is-active' : ''}
-          type="button"
-        >
-          <BoldOutlined />
-        </button>
-      </Tooltip>
-      <Tooltip title="Italic">
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={editor.isActive('italic') ? 'is-active' : ''}
-          type="button"
-        >
-          <ItalicOutlined />
-        </button>
-      </Tooltip>
-      <Tooltip title="Strike">
-        <button
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          disabled={!editor.can().chain().focus().toggleStrike().run()}
-          className={editor.isActive('strike') ? 'is-active' : ''}
-          type="button"
-        >
-          <StrikethroughOutlined />
-        </button>
-      </Tooltip>
-      <Tooltip title="Code">
-        <button
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          disabled={!editor.can().chain().focus().toggleCode().run()}
-          className={editor.isActive('code') ? 'is-active' : ''}
-          type="button"
-        >
-          <CodeOutlined />
-        </button>
-      </Tooltip>
-      <div style={{ width: 1, backgroundColor: '#eee', margin: '0 4px' }} />
-      <Tooltip title="H1">
-        <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
-          type="button"
-          style={{ fontWeight: 'bold' }}
-        >
-          H1
-        </button>
-      </Tooltip>
-      <Tooltip title="H2">
-        <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
-          type="button"
-          style={{ fontWeight: 'bold' }}
-        >
-          H2
-        </button>
-      </Tooltip>
-      <Tooltip title="H3">
-        <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}
-          type="button"
-          style={{ fontWeight: 'bold' }}
-        >
-          H3
-        </button>
-      </Tooltip>
-      <div style={{ width: 1, backgroundColor: '#eee', margin: '0 4px' }} />
-      <Tooltip title="Bullet List">
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={editor.isActive('bulletList') ? 'is-active' : ''}
-          type="button"
-        >
-          <UnorderedListOutlined />
-        </button>
-      </Tooltip>
-      <Tooltip title="Ordered List">
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={editor.isActive('orderedList') ? 'is-active' : ''}
-          type="button"
-        >
-          <OrderedListOutlined />
-        </button>
-      </Tooltip>
-      <div style={{ width: 1, backgroundColor: '#eee', margin: '0 4px' }} />
-      <Tooltip title="Horizontal Rule">
-        <button onClick={() => editor.chain().focus().setHorizontalRule().run()} type="button">
-          <MinusOutlined />
-        </button>
-      </Tooltip>
-      <div style={{ flex: 1 }} />
-      <Tooltip title="Undo">
-        <button
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().chain().focus().undo().run()}
-          type="button"
-        >
-          <UndoOutlined />
-        </button>
-      </Tooltip>
-      <Tooltip title="Redo">
-        <button
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().chain().focus().redo().run()}
-          type="button"
-        >
-          <RedoOutlined />
-        </button>
-      </Tooltip>
-    </div>
-  );
-};
-
 const TiptapEditor: React.FC<TiptapEditorProps> = ({ 
   value = '', 
   onChange,
   placeholder = 'Write something...' 
 }) => {
+  const lowlight = createLowlight(common);
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false, // Disable the default code block
+      }),
+      CodeBlockLowlight.configure({
+        lowlight,
+      }),
+      Underline,
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'tiptap-link',
+        },
+      }),
+      Superscript,
+      Subscript,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
     ],
     content: value,
     editorProps: {
@@ -164,11 +63,9 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      // Call onChange only if content actually changed to avoid cycles if necessary, 
-      // but getHTML() comparison is better done in the useEffect if we want to sync back props.
-      // Here we just notify parent.
       onChange?.(html === '<p></p>' ? '' : html);
     },
+    immediatelyRender: false, // For SSR support
   });
 
   // Sync value from props to editor
@@ -186,10 +83,17 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }, [value, editor]);
 
   return (
-    <div className="tiptap-editor-wrapper">
-      <MenuBar editor={editor} />
-      <EditorContent editor={editor} placeholder={placeholder} />
-    </div>
+    <Tiptap instance={editor}>
+      <Tiptap.Loading>
+        <div className="tiptap-editor-wrapper">
+          <div className="tiptap-toolbar">{placeholder}</div>
+        </div>
+      </Tiptap.Loading>
+      <div className="tiptap-editor-wrapper">
+        <MenuBar />
+        <Tiptap.Content className="tiptap-content" />
+      </div>
+    </Tiptap>
   );
 };
 

@@ -45,6 +45,19 @@
   border-color: #bae0ff;
 }
 
+.tiptap-toolbar .ant-select {
+  align-self: center;
+}
+
+.tiptap-toolbar .ant-select-selector {
+  border-radius: 4px !important;
+  transition: all 0.2s;
+}
+
+.tiptap-toolbar .ant-select:hover .ant-select-selector {
+  border-color: #1677ff !important;
+}
+
 .tiptap-content {
   flex: 1;
   min-height: 200px;
@@ -82,35 +95,249 @@
   margin-bottom: 0.5rem;
 }
 
+/* Inline code */
 .tiptap-content code {
-  background-color: rgba(#616161, 0.1);
-  color: #616161;
+  background-color: #f5f5f5;
+  color: #d73a49;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
 }
 
+/* Code block container */
 .tiptap-content pre {
-  background: #0d0d0d;
-  color: #fff;
-  font-family: 'JetBrainsMono', monospace;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
+  background: #282c34;
+  color: #abb2bf;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tiptap-content pre code {
   color: inherit;
   padding: 0;
   background: none;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Syntax highlighting colors (Atom One Dark theme) */
+.tiptap-content pre .hljs-comment,
+.tiptap-content pre .hljs-quote {
+  color: #5c6370;
+  font-style: italic;
+}
+
+.tiptap-content pre .hljs-keyword,
+.tiptap-content pre .hljs-selector-tag,
+.tiptap-content pre .hljs-addition {
+  color: #c678dd;
+}
+
+.tiptap-content pre .hljs-number,
+.tiptap-content pre .hljs-string,
+.tiptap-content pre .hljs-meta .hljs-string,
+.tiptap-content pre .hljs-literal,
+.tiptap-content pre .hljs-doctag,
+.tiptap-content pre .hljs-regexp {
+  color: #98c379;
+}
+
+.tiptap-content pre .hljs-title,
+.tiptap-content pre .hljs-section,
+.tiptap-content pre .hljs-name,
+.tiptap-content pre .hljs-selector-id,
+.tiptap-content pre .hljs-selector-class {
+  color: #e06c75;
+}
+
+.tiptap-content pre .hljs-attribute,
+.tiptap-content pre .hljs-attr,
+.tiptap-content pre .hljs-variable,
+.tiptap-content pre .hljs-template-variable,
+.tiptap-content pre .hljs-class .hljs-title,
+.tiptap-content pre .hljs-type {
+  color: #d19a66;
+}
+
+.tiptap-content pre .hljs-symbol,
+.tiptap-content pre .hljs-bullet,
+.tiptap-content pre .hljs-subst,
+.tiptap-content pre .hljs-meta,
+.tiptap-content pre .hljs-meta .hljs-keyword,
+.tiptap-content pre .hljs-selector-attr,
+.tiptap-content pre .hljs-selector-pseudo,
+.tiptap-content pre .hljs-link {
+  color: #61aeee;
+}
+
+.tiptap-content pre .hljs-built_in,
+.tiptap-content pre .hljs-deletion {
+  color: #e06c75;
+}
+
+.tiptap-content pre .hljs-formula {
+  background: #3e4451;
+}
+
+.tiptap-content pre .hljs-emphasis {
+  font-style: italic;
+}
+
+.tiptap-content pre .hljs-strong {
+  font-weight: bold;
 }
 
 .tiptap-content blockquote {
-  border-left: 3px solid #0d0d0d;
+  border-left: 4px solid #4096ff;
   padding-left: 1rem;
-  margin-left: 0;
-  margin-right: 0;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin: 1rem 0;
+  background-color: #f5f8ff;
+  color: #555;
+  font-style: italic;
 }
 
 .tiptap-content hr {
   border: none;
   border-top: 2px solid rgba(13, 13, 13, 0.1);
   margin: 2rem 0;
+}
+
+/* Underline */
+.tiptap-content u {
+  text-decoration: underline;
+}
+
+/* Highlight */
+.tiptap-content mark {
+  background-color: #fff59d;
+  padding: 0.125rem 0.25rem;
+  border-radius: 2px;
+}
+
+/* Links */
+.tiptap-content a.tiptap-link {
+  color: #1677ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tiptap-content a.tiptap-link:hover {
+  color: #0958d9;
+}
+
+/* Superscript and Subscript */
+.tiptap-content sup {
+  vertical-align: super;
+  font-size: smaller;
+}
+
+.tiptap-content sub {
+  vertical-align: sub;
+  font-size: smaller;
+}
+
+/* Text Alignment */
+.tiptap-content [style*="text-align: left"] {
+  text-align: left;
+}
+
+.tiptap-content [style*="text-align: center"] {
+  text-align: center;
+}
+
+.tiptap-content [style*="text-align: right"] {
+  text-align: right;
+}
+
+.tiptap-content [style*="text-align: justify"] {
+  text-align: justify;
+}
+
+/* Task List */
+.tiptap-content ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+  margin: 1rem 0;
+}
+
+.tiptap-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.tiptap-content ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+  user-select: none;
+  display: flex;
+  align-items: center;
+}
+
+.tiptap-content ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+}
+
+.tiptap-content ul[data-type="taskList"] input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #1677ff;
+}
+
+.tiptap-content ul[data-type="taskList"] ul[data-type="taskList"] {
+  margin: 0.5rem 0 0 1.5rem;
+}
+
+/* Task Item paragraph */
+.tiptap-content ul[data-type="taskList"] p {
+  margin: 0;
+}
+
+/* Alternative selectors for different Tiptap versions */
+.tiptap-content li[data-type="taskItem"] {
+  display: flex;
+  align-items: center;
+  list-style: none;
+}
+
+.tiptap-content li[data-type="taskItem"] > label {
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.tiptap-content li[data-type="taskItem"] > div {
+  flex: 1 1 auto;
+}
+
+.tiptap-content li[data-type="taskItem"] input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #1677ff;
+}
+
+/* Completed task items - strikethrough effect */
+.tiptap-content ul[data-type="taskList"] li[data-checked="true"] > div,
+.tiptap-content ul[data-type="taskList"] li[data-checked="true"] p {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.tiptap-content li[data-type="taskItem"][data-checked="true"] > div,
+.tiptap-content li[data-type="taskItem"][data-checked="true"] p {
+  text-decoration: line-through;
+  color: #999;
 }

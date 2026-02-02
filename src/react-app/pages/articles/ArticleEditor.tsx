@@ -22,6 +22,7 @@ import {
 } from "@frontend/api/articles";
 import { categoriesApi } from "@frontend/api/categories";
 import { tagsApi } from "@frontend/api/tags";
+import TiptapEditor from "@frontend/components/TiptapEditor/TiptapEditor";
 
 const { TextArea } = Input;
 
@@ -266,10 +267,7 @@ const ArticleEditor = () => {
               name="content"
               rules={[{ required: true, message: "请输入文章内容" }]}
             >
-              <TextArea
-                placeholder="文章内容（暂时使用 TextArea，后续会替换为 Tiptap 编辑器）"
-                style={{ minHeight: 500, fontFamily: "monospace" }}
-              />
+              <TiptapEditor placeholder="开始编写文章内容..." />
             </Form.Item>
           </Card>
         </div>
