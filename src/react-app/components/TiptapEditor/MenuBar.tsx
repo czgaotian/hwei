@@ -1,7 +1,6 @@
-import { useTiptap } from '@tiptap/react';
+import { useTiptap, useEditorState } from '@tiptap/react';
 import { createFromIconfontCN } from '@ant-design/icons';
 import { Tooltip, Select, Divider } from 'antd';
-import { useEffect, useState } from 'react';
 
 const IconFont = createFromIconfontCN({
   scriptUrl: '//at.alicdn.com/t/c/font_5121989_x07ni966ywq.js',
@@ -10,6 +9,127 @@ const IconFont = createFromIconfontCN({
 const MenuBar = () => {
   const { editor, isReady } = useTiptap();
 
+  // Use useEditorState to subscribe to specific state changes
+  // This prevents unnecessary re-renders of the entire toolbar
+  const canUndo = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.can().chain().focus().undo().run() ?? false,
+  });
+
+  const canRedo = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.can().chain().focus().redo().run() ?? false,
+  });
+
+  const headingLevel = useEditorState({
+    editor,
+    selector: (ctx) => {
+      if (ctx.editor?.isActive('heading', { level: 1 })) return 'h1';
+      if (ctx.editor?.isActive('heading', { level: 2 })) return 'h2';
+      if (ctx.editor?.isActive('heading', { level: 3 })) return 'h3';
+      return undefined;
+    },
+  });
+
+  const listType = useEditorState({
+    editor,
+    selector: (ctx) => {
+      if (ctx.editor?.isActive('bulletList')) return 'bullet';
+      if (ctx.editor?.isActive('orderedList')) return 'ordered';
+      return undefined;
+    },
+  });
+
+  const isTaskListActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('taskList') ?? false,
+  });
+
+  const isBlockquoteActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('blockquote') ?? false,
+  });
+
+  const isCodeBlockActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('codeBlock') ?? false,
+  });
+
+  const isBoldActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('bold') ?? false,
+  });
+
+  const canBold = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.can().chain().focus().toggleBold().run() ?? false,
+  });
+
+  const isItalicActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('italic') ?? false,
+  });
+
+  const canItalic = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.can().chain().focus().toggleItalic().run() ?? false,
+  });
+
+  const isStrikeActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('strike') ?? false,
+  });
+
+  const canStrike = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.can().chain().focus().toggleStrike().run() ?? false,
+  });
+
+  const isCodeActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('code') ?? false,
+  });
+
+  const canCode = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.can().chain().focus().toggleCode().run() ?? false,
+  });
+
+  const isUnderlineActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('underline') ?? false,
+  });
+
+  const isHighlightActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('highlight') ?? false,
+  });
+
+  const isLinkActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('link') ?? false,
+  });
+
+  const isSuperscriptActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('superscript') ?? false,
+  });
+
+  const isSubscriptActive = useEditorState({
+    editor,
+    selector: (ctx) => ctx.editor?.isActive('subscript') ?? false,
+  });
+
+  const textAlign = useEditorState({
+    editor,
+    selector: (ctx) => {
+      if (ctx.editor?.isActive({ textAlign: 'left' })) return 'left';
+      if (ctx.editor?.isActive({ textAlign: 'center' })) return 'center';
+      if (ctx.editor?.isActive({ textAlign: 'right' })) return 'right';
+      if (ctx.editor?.isActive({ textAlign: 'justify' })) return 'justify';
+      return undefined;
+    },
+  });
 
   if (!isReady || !editor) {
     return null;
@@ -21,7 +141,7 @@ const MenuBar = () => {
       <Tooltip title="Undo">
         <button
           onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().chain().focus().undo().run()}
+          disabled={!canUndo}
           type="button"
         >
           <IconFont type="icon-undo" />
@@ -30,7 +150,7 @@ const MenuBar = () => {
       <Tooltip title="Redo">
         <button
           onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().chain().focus().redo().run()}
+          disabled={!canRedo}
           type="button"
         >
           <IconFont type="icon-redo" />
@@ -41,12 +161,7 @@ const MenuBar = () => {
       
       {/* Heading Selector */}
       <Select
-        value={
-          editor.isActive('heading', { level: 1 }) ? 'h1' :
-          editor.isActive('heading', { level: 2 }) ? 'h2' :
-          editor.isActive('heading', { level: 3 }) ? 'h3' :
-          undefined
-        }
+        value={headingLevel}
         placeholder="Normal"
         onChange={(value) => {
           const level = parseInt(value.replace('h', '')) as 1 | 2 | 3;
@@ -87,11 +202,7 @@ const MenuBar = () => {
       
       {/* List Selector */}
       <Select
-        value={
-          editor.isActive('bulletList') ? 'bullet' :
-          editor.isActive('orderedList') ? 'ordered' :
-          undefined
-        }
+        value={listType}
         placeholder={<IconFont type="icon-unordered-list" />}
         onChange={(value) => {
           if (value === 'bullet') {
@@ -128,7 +239,7 @@ const MenuBar = () => {
       <Tooltip title="Task List">
         <button
           onClick={() => editor.chain().focus().toggleTaskList().run()}
-          className={editor.isActive('taskList') ? 'is-active' : ''}
+          className={isTaskListActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-task-list" />
@@ -138,7 +249,7 @@ const MenuBar = () => {
       <Tooltip title="Block Quote">
         <button
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={editor.isActive('blockquote') ? 'is-active' : ''}
+          className={isBlockquoteActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-quote" />
@@ -150,7 +261,7 @@ const MenuBar = () => {
       <Tooltip title="Code Block">
         <button
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={editor.isActive('codeBlock') ? 'is-active' : ''}
+          className={isCodeBlockActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-code-block" />
@@ -163,8 +274,8 @@ const MenuBar = () => {
       <Tooltip title="Bold">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
-          disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={editor.isActive('bold') ? 'is-active' : ''}
+          disabled={!canBold}
+          className={isBoldActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-bold" />
@@ -173,8 +284,8 @@ const MenuBar = () => {
       <Tooltip title="Italic">
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={editor.isActive('italic') ? 'is-active' : ''}
+          disabled={!canItalic}
+          className={isItalicActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-italic" />
@@ -183,8 +294,8 @@ const MenuBar = () => {
       <Tooltip title="Strike">
         <button
           onClick={() => editor.chain().focus().toggleStrike().run()}
-          disabled={!editor.can().chain().focus().toggleStrike().run()}
-          className={editor.isActive('strike') ? 'is-active' : ''}
+          disabled={!canStrike}
+          className={isStrikeActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-strike" />
@@ -193,8 +304,8 @@ const MenuBar = () => {
       <Tooltip title="Code">
         <button
           onClick={() => editor.chain().focus().toggleCode().run()}
-          disabled={!editor.can().chain().focus().toggleCode().run()}
-          className={editor.isActive('code') ? 'is-active' : ''}
+          disabled={!canCode}
+          className={isCodeActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-code" />
@@ -205,7 +316,7 @@ const MenuBar = () => {
       <Tooltip title="Underline">
         <button
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={editor.isActive('underline') ? 'is-active' : ''}
+          className={isUnderlineActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-underline" />
@@ -215,7 +326,7 @@ const MenuBar = () => {
       <Tooltip title="Highlight">
         <button
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          className={editor.isActive('highlight') ? 'is-active' : ''}
+          className={isHighlightActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-highlight" />
@@ -230,7 +341,7 @@ const MenuBar = () => {
               editor.chain().focus().setLink({ href: url }).run();
             }
           }}
-          className={editor.isActive('link') ? 'is-active' : ''}
+          className={isLinkActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-link" />
@@ -240,7 +351,7 @@ const MenuBar = () => {
       <Tooltip title="Superscript">
         <button
           onClick={() => editor.chain().focus().toggleSuperscript().run()}
-          className={editor.isActive('superscript') ? 'is-active' : ''}
+          className={isSuperscriptActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-superscript" />
@@ -250,7 +361,7 @@ const MenuBar = () => {
       <Tooltip title="Subscript">
         <button
           onClick={() => editor.chain().focus().toggleSubscript().run()}
-          className={editor.isActive('subscript') ? 'is-active' : ''}
+          className={isSubscriptActive ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-subscript" />
@@ -263,7 +374,7 @@ const MenuBar = () => {
       <Tooltip title="Align Left">
         <button
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}
+          className={textAlign === 'left' ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-align-left" />
@@ -273,7 +384,7 @@ const MenuBar = () => {
       <Tooltip title="Align Center">
         <button
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}
+          className={textAlign === 'center' ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-align-center" />
@@ -283,7 +394,7 @@ const MenuBar = () => {
       <Tooltip title="Align Right">
         <button
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}
+          className={textAlign === 'right' ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-align-right" />
@@ -293,7 +404,7 @@ const MenuBar = () => {
       <Tooltip title="Justify">
         <button
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          className={editor.isActive({ textAlign: 'justify' }) ? 'is-active' : ''}
+          className={textAlign === 'justify' ? 'is-active' : ''}
           type="button"
         >
           <IconFont type="icon-align-justify" />

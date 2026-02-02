@@ -65,7 +65,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       const html = editor.getHTML();
       onChange?.(html === '<p></p>' ? '' : html);
     },
-    immediatelyRender: false, // For SSR support
+    shouldRerenderOnTransaction: false, // Optimize performance by preventing unnecessary re-renders
   });
 
   // Sync value from props to editor
