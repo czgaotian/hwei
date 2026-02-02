@@ -31,10 +31,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     },
     {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
       shouldRetryOnError: false,
-      dedupingInterval: 5000,
     },
   );
 
