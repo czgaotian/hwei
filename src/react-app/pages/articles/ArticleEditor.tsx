@@ -299,6 +299,23 @@ const ArticleEditor = () => {
               )}
             </Card>
 
+            {/* Slug 设置 */}
+            <Card title="URL Slug" size="small">
+              <Form.Item
+                name="slug"
+                rules={[
+                  { max: 255, message: "Slug 不能超过 255 个字符" },
+                  {
+                    pattern: /^[a-z0-9\u4e00-\u9fa5]+(?:-[a-z0-9\u4e00-\u9fa5]+)*$/,
+                    message: "Slug 只能包含小写字母、数字、中文和连字符",
+                  },
+                ]}
+                style={{ marginBottom: 0 }}
+              >
+                <Input placeholder="文章的 URL 标识符，留空则自动从标题生成" />
+              </Form.Item>
+            </Card>
+
             {/* 分类设置 */}
             <Card title="分类" size="small">
               <Form.Item
