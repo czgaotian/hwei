@@ -209,9 +209,10 @@ const ArticleList = () => {
         title: "分类",
         dataIndex: "category",
         key: "category",
-        render: (category: Article["category"]) => (
-          <Tag color={category.color}>{category.name}</Tag>
-        ),
+        render: (category: Article["category"]) =>
+          category ? (
+            <Tag color={category?.color || undefined}>{category.name}</Tag>
+          ) : "-",
       },
       {
         title: "标签",
@@ -219,11 +220,13 @@ const ArticleList = () => {
         key: "tags",
         render: (tags: Article["tags"]) => (
           <Space>
-            {tags.map((tag) => (
-              <Tag key={tag.id} color={tag.color}>
-                {tag.name}
-              </Tag>
-            ))}
+            {tags && tags.length > 0 ? (
+              tags.map((tag) => (
+                <Tag key={tag.id} color={tag?.color || undefined}>
+                  {tag.name}
+                </Tag>
+              ))
+            ) : "-"}
           </Space>
         ),
       },

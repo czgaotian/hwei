@@ -180,7 +180,7 @@ const CategoryList: React.FC = () => {
                 width: "16px",
                 height: "16px",
                 borderRadius: "2px",
-                backgroundColor: record.color,
+                backgroundColor: record?.color || "#cccccc",
                 border: "1px solid #d9d9d9",
               }}
             />
@@ -201,12 +201,12 @@ const CategoryList: React.FC = () => {
                 width: "16px",
                 height: "16px",
                 borderRadius: "2px",
-                backgroundColor: color,
+                backgroundColor: color || "#cccccc",
                 border: "1px solid #d9d9d9",
               }}
             />
             <Text type="secondary" style={{ fontSize: "12px" }}>
-              {color.toUpperCase()}
+              {color?.toUpperCase() || "N/A"}
             </Text>
           </Space>
         ),
